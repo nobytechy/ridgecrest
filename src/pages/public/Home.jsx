@@ -21,12 +21,11 @@ const stagger = {
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 
-/* Zimbabwean schoolchildren imagery, sourced from Wikimedia Commons and
-   self-hosted at /public/photos. Replace with the school's own photos
-   when available (same filenames; that's all). */
+/* Real Ridgecrest Junior School photos, self-hosted at /public/photos. */
 const HERO_IMAGES = [
-  '/photos/zw-school-yard.jpg',
-  '/photos/zw-marimbas.jpg',
+  '/photos/rc-heritage-wide-2.jpg',
+  '/photos/rc-pizza-class.jpg',
+  '/photos/rc-cafe-kids.jpg',
 ];
 
 const VALUES = [

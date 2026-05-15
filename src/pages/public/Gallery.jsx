@@ -23,15 +23,15 @@ export default function Gallery() {
   return (
     <div className="bg-white">
       <section className="relative overflow-hidden bg-rc-950 py-20 text-white md:py-24">
-        <img src="/photos/zw-marimbas.jpg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover"/>
+        <img src="/photos/rc-heritage-wide-1.jpg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover"/>
         <div className="absolute inset-0 bg-gradient-to-r from-rc-950/95 via-rc-900/80 to-rc-800/40"/>
         <div className="container-page relative z-10">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rc-300">Gallery</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sun-300">Gallery</p>
           <h1 className="mt-3 max-w-2xl font-display text-4xl font-bold leading-tight tracking-tight md:text-5xl" style={{ textShadow: '0 2px 30px rgba(0,0,0,0.5)' }}>
             School life in pictures.
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-rc-100" style={{ textShadow: '0 1px 20px rgba(0,0,0,0.5)' }}>
-            Sports days, prize-givings, learning in the classroom — a window into life at Ridgecrest.
+            Heritage trips, classroom learning, practical days out — a window into life at Ridgecrest Junior.
           </p>
         </div>
       </section>

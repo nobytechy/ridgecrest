@@ -1,11 +1,10 @@
 import { useSettings } from '@/context/SettingsContext';
 import { cn } from '@/lib/utils';
 
-/* Default to /logo.png served from `public/` — drop the school's logo
-   JPEG/PNG there as `logo.png` and it lights up automatically. If the
-   file is missing, the colorful inline SVG fallback kicks in (sun + arc
-   + grass — mirrors the actual Ridgecrest mark). */
-export default function Logo({ size = 40, withText = true, className = '' }) {
+/* Logo — loads /logo.png from public/ first (the school's actual mark);
+   falls back to a colourful inline SVG that mirrors the logo aesthetic.
+   Pass `dark` when placed on a dark surface so the wordmark stays readable. */
+export default function Logo({ size = 40, withText = true, dark = false, className = '' }) {
   const { settings } = useSettings();
   const custom = settings?.logo_url || '/logo.png';
   const name = settings?.school_name || 'Ridgecrest Junior School';
@@ -19,7 +18,6 @@ export default function Logo({ size = 40, withText = true, className = '' }) {
         style={{ height: size, width: size }}
         className="rounded-lg object-contain"
         onError={(e) => {
-          // Fallback to inline SVG if /logo.png is missing
           e.target.style.display = 'none';
           e.target.nextSibling.style.display = 'block';
         }}
@@ -40,8 +38,8 @@ export default function Logo({ size = 40, withText = true, className = '' }) {
       </svg>
       {withText && (
         <div className="leading-tight">
-          <p className="font-display text-base font-bold text-rc-900">{name}</p>
-          <p className="text-[10px] uppercase tracking-[0.18em] text-rc-600">{motto}</p>
+          <p className={cn('font-display text-base font-bold', dark ? 'text-white' : 'text-rc-900')}>{name}</p>
+          <p className={cn('text-[10px] uppercase tracking-[0.18em]', dark ? 'text-sun-300' : 'text-rc-600')}>{motto}</p>
         </div>
       )}
     </div>

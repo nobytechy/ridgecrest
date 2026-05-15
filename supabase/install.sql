@@ -1309,7 +1309,7 @@ begin
      current_timestamp - interval '1 day'),
     (v_class, v_author,
      'What a great morning! Today we did our timetable drill and Manisha got every single 7-times-table answer right. Tafara was off school today (we hope he feels better soon).',
-     '/photos/zw-water.jpg',
+     '/photos/rc-cafe-kids.jpg',
      false,
      current_timestamp - interval '6 hours'),
     (v_class, v_author,
@@ -1323,31 +1323,47 @@ do $$
 declare
   v_album1 uuid; v_album2 uuid;
 begin
-  select id into v_album1 from public.rc_gallery_albums where title = 'Heritage Trip — Kumusha Crescent';
-  if v_album1 is null then
-    v_album1 := gen_random_uuid();
-    insert into public.rc_gallery_albums (id, title, description, cover_url, event_date, position)
-    values (v_album1, 'Heritage Trip — Kumusha Crescent', 'Ridgecrest Junior on a heritage visit — our heritage, our pride.',
-            '/photos/zw-marimbas.jpg',
-            '2026-06-15', 10);
-    insert into public.rc_gallery_photos (album_id, url, caption, position) values
-      (v_album1, '/photos/zw-marimbas.jpg',    'Marimba performance',     10),
-      (v_album1, '/photos/zw-school-yard.jpg', 'Working together',        20),
-      (v_album1, '/photos/zw-chisungu.jpg',    'Class portrait',          30);
-  end if;
+  -- Refresh: clear existing seed albums so we can re-seed with the real Ridgecrest photos
+  delete from public.rc_gallery_photos where album_id in (
+    select id from public.rc_gallery_albums where title in
+      ('Heritage Trip — Kumusha Crescent', 'A day on campus', 'Computer Lab',
+       'Sports Day 2026', 'Term 2 opens', 'Practical Learning')
+  );
+  delete from public.rc_gallery_albums where title in
+    ('Heritage Trip — Kumusha Crescent', 'A day on campus', 'Computer Lab',
+     'Sports Day 2026', 'Term 2 opens', 'Practical Learning');
 
-  select id into v_album2 from public.rc_gallery_albums where title = 'A day on campus';
-  if v_album2 is null then
-    v_album2 := gen_random_uuid();
-    insert into public.rc_gallery_albums (id, title, description, cover_url, event_date, position)
-    values (v_album2, 'A day on campus', 'From the morning bell to the afternoon clubs — life at Ridgecrest Junior.',
-            '/photos/zw-classroom.jpg',
-            '2026-05-20', 20);
+  v_album1 := gen_random_uuid();
+  insert into public.rc_gallery_albums (id, title, description, cover_url, event_date, position) values
+    (v_album1, 'Heritage Trip — Kumusha Crescent',
+     'Ridgecrest Junior on a heritage visit — our heritage, our pride. Pounding maize, traditional storytelling, and learning the old ways.',
+     '/photos/rc-heritage-wide-1.jpg', '2026-06-15', 10);
+  insert into public.rc_gallery_photos (album_id, url, caption, position) values
+    (v_album1, '/photos/rc-heritage-wide-1.jpg',  'At the kraal',                   10),
+    (v_album1, '/photos/rc-heritage-wide-2.jpg',  'Pounding maize',                 20),
+    (v_album1, '/photos/rc-heritage-line.jpg',    'Learning together',              30),
+    (v_album1, '/photos/rc-heritage-portrait.jpg','One of our learners',            40);
+
+  v_album2 := gen_random_uuid();
+  insert into public.rc_gallery_albums (id, title, description, cover_url, event_date, position) values
+    (v_album2, 'Cultural Day on campus',
+     'Traditional dress, traditional cloth, and traditional stories — celebrating Zimbabwe at Ridgecrest Junior.',
+     '/photos/rc-classroom-cultural-2.jpg', '2026-05-20', 20);
+  insert into public.rc_gallery_photos (album_id, url, caption, position) values
+    (v_album2, '/photos/rc-classroom-cultural-1.jpg', 'Cultural day — group',  10),
+    (v_album2, '/photos/rc-classroom-cultural-2.jpg', 'In their colours',      20),
+    (v_album2, '/photos/rc-classroom-cultural-3.jpg', 'Listening to elders',   30);
+
+  declare v_album3 uuid := gen_random_uuid();
+  begin
+    insert into public.rc_gallery_albums (id, title, description, cover_url, event_date, position) values
+      (v_album3, 'Practical Learning — Pizza-making at Pastino',
+       'Hands-on learning beyond the classroom — our learners measuring, mixing, and making their own meals.',
+       '/photos/rc-pizza-class.jpg', '2026-04-22', 30);
     insert into public.rc_gallery_photos (album_id, url, caption, position) values
-      (v_album2, '/photos/zw-classroom.jpg', 'In the classroom',  10),
-      (v_album2, '/photos/zw-water.jpg',     'Break time',        20),
-      (v_album2, '/photos/zw-pe-boy.jpg',    'PE & sport',        30);
-  end if;
+      (v_album3, '/photos/rc-pizza-class.jpg', 'Building the pizzas',  10),
+      (v_album3, '/photos/rc-cafe-kids.jpg',   'A well-earned break',  20);
+  end;
 end $$;
 
 -- Schemes of work — Grade 3 · Term 2 · five core subjects, 12 weeks each

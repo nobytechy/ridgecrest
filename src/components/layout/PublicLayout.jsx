@@ -127,9 +127,9 @@ export default function PublicLayout() {
       <footer className="relative overflow-hidden border-t border-rc-800 bg-rc-950 text-rc-100">
         {/* Background photo with strong dark overlay so text stays readable */}
         <img
-          src="/photos/zw-marimbas.jpg"
+          src="/photos/rc-heritage-wide-1.jpg"
           alt="" aria-hidden="true"
-          className="absolute inset-0 h-full w-full object-cover opacity-25"
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-rc-950/95 via-rc-900/92 to-rc-700/75"/>
         <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-sun-500/10 blur-3xl"/>
@@ -137,7 +137,7 @@ export default function PublicLayout() {
 
         <div className="container-page relative z-10 grid gap-8 py-14 md:grid-cols-4">
           <div className="md:col-span-2">
-            <Logo size={44}/>
+            <Logo size={44} dark/>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-rc-100/85">
               {settings?.tagline || 'A learning home for tomorrow\'s leaders.'}
             </p>

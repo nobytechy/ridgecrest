@@ -33,7 +33,7 @@ export default function Contact() {
   return (
     <div className="bg-white">
       <section className="relative overflow-hidden bg-rc-950 py-20 text-white md:py-24">
-        <img src="/photos/zw-school-yard.jpg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover"/>
+        <img src="/photos/rc-classroom-cultural-3.jpg" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover"/>
         <div className="absolute inset-0 bg-gradient-to-r from-rc-950/95 via-rc-900/80 to-rc-800/40"/>
         <div className="container-page relative z-10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rc-300">Contact</p>
