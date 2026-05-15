@@ -23,7 +23,7 @@ export default function Gallery() {
   return (
     <div className="bg-white">
       <section className="relative overflow-hidden bg-rc-950 py-20 text-white md:py-24">
-        <img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1920&auto=format&fit=crop&q=80" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover"/>
+        <img src="https://images.unsplash.com/photo-1503676593-cebf3ae6c75b?w=1920&auto=format&fit=crop&q=80" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover"/>
         <div className="absolute inset-0 bg-gradient-to-r from-rc-950/95 via-rc-900/80 to-rc-800/40"/>
         <div className="container-page relative z-10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rc-300">Gallery</p>

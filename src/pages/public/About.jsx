@@ -22,7 +22,7 @@ export default function About() {
   return (
     <div className="bg-white">
       <section className="relative overflow-hidden bg-rc-950 py-24 text-white md:py-28">
-        <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1920&auto=format&fit=crop&q=80" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover"/>
+        <img src="https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=1920&auto=format&fit=crop&q=80" alt="" aria-hidden="true" className="absolute inset-0 h-full w-full object-cover"/>
         <div className="absolute inset-0 bg-gradient-to-r from-rc-950/95 via-rc-900/80 to-rc-800/40"/>
         <div className="container-page relative z-10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rc-300">Our story</p>

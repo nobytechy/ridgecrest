@@ -45,15 +45,15 @@ begin new.updated_at := now(); return new; end $$;
 -- ─── Site settings ──────────────────────────────────────────────────────
 create table if not exists public.rc_site_settings (
   id              int primary key default 1 check (id = 1),
-  school_name     text not null default 'Ridgecrest',
-  motto           text default 'Wisdom · Discipline · Excellence',
-  tagline         text default 'A learning home for tomorrow''s leaders.',
-  primary_phone   text default '+263 77 000 0000',
-  whatsapp_phone  text default '+263 77 000 0000',
+  school_name     text not null default 'Ridgecrest School',
+  motto           text default 'Quality education · ECD A to Grade 7',
+  tagline         text default 'Quality education from ECD A & B to Grade 7, supported by a state-of-the-art computer lab and safe, reliable transport.',
+  primary_phone   text default '+263 77 389 2866',
+  whatsapp_phone  text default '+263 77 389 2866',
   email           text default 'enquiries@ridgecrest.co.zw',
-  address_line    text default 'Borrowdale, Harare',
+  address_line    text default '235 Chiremba Road, Hatfield, Harare',
   google_maps_url text,
-  facebook_url    text,
+  facebook_url    text default 'https://www.facebook.com/profile.php?id=61583900260420',
   instagram_url   text,
   logo_url        text,
   hero_image_url  text,
@@ -864,10 +864,24 @@ insert into public.rc_terms (id, name, academic_year, term_number, start_date, e
   ('44444444-4444-4444-4444-000000002603', 'Term 3 2026', 2026, 3, '2026-09-09', '2026-12-04', false)
 on conflict (id) do nothing;
 
-update public.rc_site_settings set current_term_id = '44444444-4444-4444-4444-000000002602' where id = 1;
+-- Always sync the public-facing school details (re-runnable refresh).
+update public.rc_site_settings
+   set school_name    = 'Ridgecrest School',
+       motto          = 'Quality education · ECD A to Grade 7',
+       tagline        = 'Quality education from ECD A & B to Grade 7, supported by a state-of-the-art computer lab and safe, reliable transport.',
+       primary_phone  = '+263 77 389 2866',
+       whatsapp_phone = '+263 77 389 2866',
+       email          = 'enquiries@ridgecrest.co.zw',
+       address_line   = '235 Chiremba Road, Hatfield, Harare',
+       facebook_url   = 'https://www.facebook.com/profile.php?id=61583900260420',
+       hero_headline  = 'A learning home for tomorrow''s leaders.',
+       hero_subhead   = 'ECD A through Grade 7 in Hatfield, Harare. Modern classrooms, a state-of-the-art computer lab, and safe school transport.',
+       current_term_id = '44444444-4444-4444-4444-000000002602'
+ where id = 1;
+
 update public.rc_site_settings
    set paynow_url        = coalesce(paynow_url,        'https://www.paynow.co.zw/Payment/Link/?q=YOUR-LINK'),
-       paynow_account    = coalesce(paynow_account,    'Ridgecrest School (Demo merchant)'),
+       paynow_account    = coalesce(paynow_account,    'Ridgecrest School'),
        cash_office_hours = coalesce(cash_office_hours, 'Mon–Fri 8am–4pm at the Admin Block. Bursar: Mr. T. Ndoro.'),
        sibling_discount_pct       = coalesce(sibling_discount_pct,       10.00),
        sibling_discount_third_pct = coalesce(sibling_discount_third_pct, 15.00)
@@ -1295,7 +1309,7 @@ begin
      current_timestamp - interval '1 day'),
     (v_class, v_author,
      'What a great morning! Today we did our timetable drill and Manisha got every single 7-times-table answer right. Tafara was off school today (we hope he feels better soon).',
-     'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1200&auto=format&fit=crop&q=80',
+     'https://images.unsplash.com/photo-1497019820-8ed5da14b3eb?w=1200&auto=format&fit=crop&q=80',
      false,
      current_timestamp - interval '6 hours'),
     (v_class, v_author,
@@ -1309,30 +1323,30 @@ do $$
 declare
   v_album1 uuid; v_album2 uuid;
 begin
-  select id into v_album1 from public.rc_gallery_albums where title = 'Sports Day 2026';
+  select id into v_album1 from public.rc_gallery_albums where title = 'Heritage Trip — Kumusha Crescent';
   if v_album1 is null then
     v_album1 := gen_random_uuid();
     insert into public.rc_gallery_albums (id, title, description, cover_url, event_date, position)
-    values (v_album1, 'Sports Day 2026', 'Annual sports day — every learner competing.',
-            'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&auto=format&fit=crop&q=80',
-            '2026-07-04', 10);
+    values (v_album1, 'Heritage Trip — Kumusha Crescent', 'Ridgecrest Junior on a heritage visit — our heritage, our pride.',
+            'https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=1200&auto=format&fit=crop&q=80',
+            '2026-06-15', 10);
     insert into public.rc_gallery_photos (album_id, url, caption, position) values
-      (v_album1, 'https://images.unsplash.com/photo-1571260899304-425eee4c7efc?w=1600&auto=format&fit=crop&q=80', 'Sprint heats', 10),
-      (v_album1, 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=1600&auto=format&fit=crop&q=80', 'Long jump',    20),
-      (v_album1, 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=1600&auto=format&fit=crop&q=80', 'Tug of war',   30);
+      (v_album1, 'https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=1600&auto=format&fit=crop&q=80', 'Arriving at Kumusha',         10),
+      (v_album1, 'https://images.unsplash.com/photo-1497019820-8ed5da14b3eb?w=1600&auto=format&fit=crop&q=80', 'Listening to elders',         20),
+      (v_album1, 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=1600&auto=format&fit=crop&q=80', 'Traditional storytelling',   30);
   end if;
 
-  select id into v_album2 from public.rc_gallery_albums where title = 'Term 2 opens';
+  select id into v_album2 from public.rc_gallery_albums where title = 'Computer Lab';
   if v_album2 is null then
     v_album2 := gen_random_uuid();
     insert into public.rc_gallery_albums (id, title, description, cover_url, event_date, position)
-    values (v_album2, 'Term 2 opens', 'The first morning back — welcome to Term 2!',
-            'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1200&auto=format&fit=crop&q=80',
-            '2026-05-13', 20);
+    values (v_album2, 'Computer Lab', 'Our state-of-the-art computer lab — hands-on digital learning from the earliest grades.',
+            'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200&auto=format&fit=crop&q=80',
+            '2026-05-20', 20);
     insert into public.rc_gallery_photos (album_id, url, caption, position) values
-      (v_album2, 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=1600&auto=format&fit=crop&q=80', 'Classrooms ready',   10),
-      (v_album2, 'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1600&auto=format&fit=crop&q=80', 'New Grade 1 intake', 20),
-      (v_album2, 'https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=1600&auto=format&fit=crop&q=80', 'Welcome assembly',   30);
+      (v_album2, 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1600&auto=format&fit=crop&q=80', 'New machines in place', 10),
+      (v_album2, 'https://images.unsplash.com/photo-1503676593-cebf3ae6c75b?w=1600&auto=format&fit=crop&q=80', 'Grade 5 ICT class',     20),
+      (v_album2, 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&auto=format&fit=crop&q=80', 'Typing club',           30);
   end if;
 end $$;
 

@@ -1,31 +1,43 @@
 import { useSettings } from '@/context/SettingsContext';
 import { cn } from '@/lib/utils';
 
+/* Default to /logo.png served from `public/` — drop the school's logo
+   JPEG/PNG there as `logo.png` and it lights up automatically. If the
+   file is missing, the colorful inline SVG fallback kicks in (sun + arc
+   + grass — mirrors the actual Ridgecrest mark). */
 export default function Logo({ size = 40, withText = true, className = '' }) {
   const { settings } = useSettings();
-  const custom = settings?.logo_url;
+  const custom = settings?.logo_url || '/logo.png';
   const name = settings?.school_name || 'Ridgecrest';
-  const motto = settings?.motto || 'Wisdom · Discipline · Excellence';
+  const motto = settings?.motto || 'Quality education · ECD A to Grade 7';
 
   return (
     <div className={cn('flex items-center gap-3', className)}>
-      {custom ? (
-        <img src={custom} alt={name} style={{ height: size, width: size }} className="rounded-lg object-contain"/>
-      ) : (
-        <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-          <defs>
-            <linearGradient id="rc-logo" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#3F3F46"/>
-              <stop offset="100%" stopColor="#09090B"/>
-            </linearGradient>
-          </defs>
-          <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#rc-logo)"/>
-          {/* Stylised crest — open book + flame */}
-          <path d="M14 38 L32 28 L50 38 L50 52 L14 52 Z" fill="#FAFAFA" opacity="0.97"/>
-          <path d="M32 28 L32 52" stroke="#3F3F46" strokeWidth="1.5"/>
-          <path d="M32 22 C 28 18, 28 13, 32 9 C 36 13, 36 18, 32 22 Z" fill="#FAFAFA" opacity="0.95"/>
-        </svg>
-      )}
+      <img
+        src={custom}
+        alt={name}
+        style={{ height: size, width: size }}
+        className="rounded-lg object-contain"
+        onError={(e) => {
+          // Fallback to inline SVG if /logo.png is missing
+          e.target.style.display = 'none';
+          e.target.nextSibling.style.display = 'block';
+        }}
+      />
+      <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" style={{ display: 'none' }}>
+        <defs>
+          <radialGradient id="rc-sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#FCD34D"/>
+            <stop offset="100%" stopColor="#F4C430"/>
+          </radialGradient>
+        </defs>
+        <circle cx="32" cy="32" r="30" fill="#ECFBFB"/>
+        <path d="M10 40 Q 32 18 54 40" stroke="#2F9E5E" strokeWidth="4" fill="none" strokeLinecap="round"/>
+        <circle cx="32" cy="28" r="8" fill="url(#rc-sun)"/>
+        <circle cx="22" cy="44" r="6" fill="#15A3A3"/>
+        <circle cx="42" cy="44" r="6" fill="#E63946"/>
+        <path d="M8 52 Q 32 60 56 52" stroke="#F4C430" strokeWidth="4" fill="none"/>
+      </svg>
       {withText && (
         <div className="leading-tight">
           <p className="font-display text-base font-bold text-rc-900">{name}</p>

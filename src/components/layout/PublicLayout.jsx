@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Menu, X, Phone, MapPin, Mail, LogIn, UserCircle2, LayoutDashboard, LogOut, BookOpen, GraduationCap, Users, MessageCircle } from 'lucide-react';
+import { Menu, X, Phone, MapPin, Mail, LogIn, UserCircle2, LayoutDashboard, LogOut, BookOpen, GraduationCap, Users, MessageCircle, Facebook } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import Logo from '@/components/Logo';
@@ -149,6 +149,12 @@ export default function PublicLayout() {
               <li><Link to="/parent/login"  className="hover:text-rc-900">Parent</Link></li>
               <li><Link to="/admin/login"   className="hover:text-rc-900">Staff / Admin</Link></li>
             </ul>
+            {settings?.facebook_url && (
+              <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer"
+                 className="mt-4 inline-flex items-center gap-2 rounded-lg border border-rc-200 bg-white px-3 py-2 text-xs font-medium text-rc-700 transition hover:border-rc-400 hover:text-rc-900">
+                <Facebook size={14}/> Follow on Facebook
+              </a>
+            )}
           </div>
         </div>
         <div className="border-t border-rc-200 py-5 text-center text-xs text-rc-500">

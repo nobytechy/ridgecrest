@@ -9,6 +9,7 @@ import { useSettings } from '@/context/SettingsContext';
 import { formatDate } from '@/lib/format';
 import GradientBackdrop from '@/components/GradientBackdrop';
 import CountUp from '@/components/CountUp';
+import ReelEmbed from '@/components/ReelEmbed';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -19,16 +20,18 @@ const stagger = {
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 
+/* African primary-school imagery — Unsplash IDs chosen for cultural fit.
+   Swap any that don't suit by replacing the photo ID portion of the URL. */
 const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1920&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1920&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=1920&auto=format&fit=crop&q=80',
+  'https://images.unsplash.com/photo-1497019820-8ed5da14b3eb?w=1920&auto=format&fit=crop&q=80',
 ];
 
 const VALUES = [
-  { icon: GraduationCap, title: 'Every child known by name', body: 'Small classes, attentive teachers, individual academic plans.' },
-  { icon: BookOpen,      title: 'Cambridge + ZIMSEC',       body: 'Dual-board preparation gives our learners options beyond Form 4.' },
-  { icon: Users,         title: 'Pastoral care first',      body: 'A house system, weekly mentor meetings, and a school counsellor on call.' },
-  { icon: Award,         title: '40+ years of excellence',  body: 'Founded in 1982. Generations of Ridgecrest alumni across Zimbabwe and abroad.' },
+  { icon: GraduationCap, title: 'Every child known by name', body: 'Small classes from ECD A through Grade 7. Every learner counts, every name is known.' },
+  { icon: BookOpen,      title: 'State-of-the-art computer lab', body: 'Hands-on digital learning from the earliest grades — preparing learners for the world they will inherit.' },
+  { icon: Users,         title: 'Safe, reliable transport',  body: 'School-run transport across Harare. Door-to-door peace of mind for every parent.' },
+  { icon: Award,         title: 'A modern learning home',    body: 'Hatfield campus blends a nurturing environment with everything a 21st-century primary school needs.' },
 ];
 
 export default function Home() {
@@ -87,6 +90,21 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Enrolment reel — click-to-play (lazy) */}
+      <ReelEmbed
+        url="https://www.facebook.com/reel/1560206775430032"
+        eyebrow="Enrolment now open"
+        headline="See a day at Ridgecrest."
+        body="A short look inside our classrooms, computer lab, and play areas. Filmed this term — exactly the school your child would join."
+        bullets={[
+          'ECD A & B through Grade 7 — every grade, one campus.',
+          'State-of-the-art computer lab.',
+          'Safe, reliable school transport.',
+        ]}
+        ctaLabel="Watch on Facebook"
+        tone="dark"
+      />
+
       {/* Trust stats */}
       <section className="relative overflow-hidden border-b border-rc-100 bg-white py-10">
         <GradientBackdrop/>
@@ -96,10 +114,10 @@ export default function Home() {
             variants={stagger}
             className="grid grid-cols-2 items-center gap-6 md:grid-cols-4">
             {[
-              { type: 'num',   v: 40,  suffix: '+',        l: 'Years of excellence' },
-              { type: 'num',   v: 600, suffix: '+',        l: 'Learners enrolled' },
-              { type: 'num',   v: 50,  suffix: '+',        l: 'Qualified educators' },
-              { type: 'text',  v: 'Cambridge',             l: '& ZIMSEC examinations' },
+              { type: 'text', v: 'ECD A → Grade 7',       l: 'Every grade, one campus' },
+              { type: 'text', v: 'State-of-the-art',       l: 'Computer lab' },
+              { type: 'text', v: 'Safe, reliable',         l: 'School transport' },
+              { type: 'text', v: 'Hatfield, Harare',       l: '235 Chiremba Road' },
             ].map((s) => (
               <motion.div key={s.l} variants={fadeUp} className="text-center md:text-left">
                 <p className="font-display text-2xl font-bold tracking-tight text-rc-900 md:text-3xl">
@@ -193,6 +211,22 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Heritage trip reel — Ridgecrest Junior visit to Kumusha Crescent */}
+      <ReelEmbed
+        url="https://www.facebook.com/reel/925737043603416"
+        eyebrow="Heritage & culture"
+        headline="Our heritage, our pride."
+        body="Ridgecrest Junior visiting Kumusha Crescent — learning, laughing, and living the values that ground our young Zimbabweans."
+        bullets={[
+          'Cultural trips woven into the school calendar.',
+          'Hands-on heritage learning, not just textbooks.',
+          'Building proud, rooted young Zimbabweans.',
+        ]}
+        ctaLabel="Watch the trip"
+        tone="light"
+        reverse
+      />
 
       {/* CTA */}
       <section className="container-page py-16 md:py-20">

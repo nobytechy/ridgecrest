@@ -1,22 +1,46 @@
 @import "tailwindcss";
 
-/* Ridgecrest brand tokens — refined grey + white palette with a near-black
-   anchor. Serif headlines (Crimson Text) for the established-school feel;
-   Inter for body text. */
+/* Ridgecrest brand tokens — primary-school palette pulled from the
+   school's actual logo: teal (running child), sun yellow, leaf green,
+   coral red. Warm, joyful, age-appropriate. */
 @theme {
-  --color-rc-50:  #FAFAFA;
-  --color-rc-100: #F4F4F5;
-  --color-rc-200: #E4E4E7;
-  --color-rc-300: #D4D4D8;
-  --color-rc-400: #A1A1AA;
-  --color-rc-500: #71717A;
-  --color-rc-600: #52525B;
-  --color-rc-700: #3F3F46;
-  --color-rc-800: #27272A;
-  --color-rc-900: #18181B;
-  --color-rc-950: #09090B;
+  /* Primary teal scale (the anchor — used everywhere rc-* is referenced) */
+  --color-rc-50:  #ECFBFB;
+  --color-rc-100: #CFF4F4;
+  --color-rc-200: #A4E8E8;
+  --color-rc-300: #6DD7D7;
+  --color-rc-400: #34BEBE;
+  --color-rc-500: #15A3A3;
+  --color-rc-600: #0F8585;
+  --color-rc-700: #0E6B6B;
+  --color-rc-800: #0F5454;
+  --color-rc-900: #0E3F3F;
+  --color-rc-950: #082828;
 
-  --font-display: 'Crimson Text', ui-serif, Georgia, serif;
+  /* Accent — sun yellow (from the logo sun + grass) */
+  --color-sun-50:  #FFFBEB;
+  --color-sun-100: #FEF3C7;
+  --color-sun-300: #FCD34D;
+  --color-sun-500: #F4C430;
+  --color-sun-600: #D4A017;
+  --color-sun-700: #A9800F;
+
+  /* Accent — leaf green (from the logo arc / grass) */
+  --color-leaf-50:  #ECFDF5;
+  --color-leaf-100: #D1FAE5;
+  --color-leaf-500: #2F9E5E;
+  --color-leaf-600: #1F8049;
+  --color-leaf-700: #186238;
+
+  /* Accent — coral red (from the running child) */
+  --color-coral-50:  #FFF1F2;
+  --color-coral-100: #FFE0E2;
+  --color-coral-500: #E63946;
+  --color-coral-600: #C42836;
+  --color-coral-700: #9E1F2A;
+
+  /* Headlines use a friendly rounded display face; body in Inter. */
+  --font-display: 'Fraunces', ui-serif, Georgia, serif;
   --font-sans:    'Inter', ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -28,7 +52,11 @@ html, body { font-family: var(--font-sans); }
 }
 
 @utility btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-rc-800 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rc-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rc-700 disabled:cursor-not-allowed disabled:opacity-60;
+  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-rc-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rc-500 disabled:cursor-not-allowed disabled:opacity-60;
+}
+
+@utility btn-sun {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-sun-500 px-5 py-2.5 text-sm font-semibold text-rc-950 shadow-sm transition hover:bg-sun-600 disabled:cursor-not-allowed disabled:opacity-60;
 }
 
 @utility btn-secondary {
@@ -40,7 +68,7 @@ html, body { font-family: var(--font-sans); }
 }
 
 @utility input {
-  @apply block w-full rounded-lg border border-rc-300 bg-white px-3.5 py-2.5 text-sm text-rc-900 placeholder:text-rc-400 shadow-sm transition focus:border-rc-700 focus:outline focus:outline-2 focus:outline-rc-400/30;
+  @apply block w-full rounded-lg border border-rc-300 bg-white px-3.5 py-2.5 text-sm text-rc-900 placeholder:text-rc-400 shadow-sm transition focus:border-rc-600 focus:outline focus:outline-2 focus:outline-rc-400/30;
 }
 
 @utility card {
