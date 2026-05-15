@@ -11,6 +11,7 @@ import Home       from '@/pages/public/Home';
 import About      from '@/pages/public/About';
 import Academics  from '@/pages/public/Academics';
 import Admissions from '@/pages/public/Admissions';
+import Gallery    from '@/pages/public/Gallery';
 import Contact    from '@/pages/public/Contact';
 
 import AdminLogin         from '@/pages/admin/AdminLogin';
@@ -20,6 +21,10 @@ import AdminParents       from '@/pages/admin/AdminParents';
 import AdminStaff         from '@/pages/admin/AdminStaff';
 import AdminClasses       from '@/pages/admin/AdminClasses';
 import AdminSubjects      from '@/pages/admin/AdminSubjects';
+import AdminSchemes       from '@/pages/admin/AdminSchemes';
+import AdminTimetable     from '@/pages/admin/AdminTimetable';
+import AdminHomework      from '@/pages/admin/AdminHomework';
+import AdminGallery       from '@/pages/admin/AdminGallery';
 import AdminMarks         from '@/pages/admin/AdminMarks';
 import AdminFees          from '@/pages/admin/AdminFees';
 import AdminAnnouncements from '@/pages/admin/AdminAnnouncements';
@@ -28,6 +33,8 @@ import AdminSettings      from '@/pages/admin/AdminSettings';
 import StudentLogin     from '@/pages/student/StudentLogin';
 import StudentDashboard from '@/pages/student/StudentDashboard';
 import StudentMarks     from '@/pages/student/StudentMarks';
+import StudentTimetable from '@/pages/student/StudentTimetable';
+import StudentHomework  from '@/pages/student/StudentHomework';
 import StudentFees      from '@/pages/student/StudentFees';
 import StudentProfile   from '@/pages/student/StudentProfile';
 
@@ -35,6 +42,7 @@ import ParentLogin       from '@/pages/parent/ParentLogin';
 import ParentDashboard   from '@/pages/parent/ParentDashboard';
 import ParentChildren    from '@/pages/parent/ParentChildren';
 import ParentChildDetail from '@/pages/parent/ParentChildDetail';
+import ParentChildEdit   from '@/pages/parent/ParentChildEdit';
 import ParentProfile     from '@/pages/parent/ParentProfile';
 
 import PrintReceipt from '@/pages/print/PrintReceipt';
@@ -69,6 +77,7 @@ export default function App() {
             <Route path="/about"      element={<About/>}/>
             <Route path="/academics"  element={<Academics/>}/>
             <Route path="/admissions" element={<Admissions/>}/>
+            <Route path="/gallery"    element={<Gallery/>}/>
             <Route path="/contact"    element={<Contact/>}/>
           </Route>
 
@@ -81,6 +90,10 @@ export default function App() {
             <Route path="staff"         element={<AdminStaff/>}/>
             <Route path="classes"       element={<AdminClasses/>}/>
             <Route path="subjects"      element={<AdminSubjects/>}/>
+            <Route path="schemes"       element={<AdminSchemes/>}/>
+            <Route path="timetable"     element={<AdminTimetable/>}/>
+            <Route path="homework"      element={<AdminHomework/>}/>
+            <Route path="gallery"       element={<AdminGallery/>}/>
             <Route path="marks"         element={<AdminMarks/>}/>
             <Route path="fees"          element={<AdminFees/>}/>
             <Route path="announcements" element={<AdminAnnouncements/>}/>
@@ -90,19 +103,22 @@ export default function App() {
           {/* Student portal */}
           <Route path="/student/login" element={<StudentLogin/>}/>
           <Route path="/student" element={<RequireStudent><StudentLayout/></RequireStudent>}>
-            <Route index            element={<StudentDashboard/>}/>
-            <Route path="marks"     element={<StudentMarks/>}/>
-            <Route path="fees"      element={<StudentFees/>}/>
-            <Route path="profile"   element={<StudentProfile/>}/>
+            <Route index              element={<StudentDashboard/>}/>
+            <Route path="marks"       element={<StudentMarks/>}/>
+            <Route path="timetable"   element={<StudentTimetable/>}/>
+            <Route path="homework"    element={<StudentHomework/>}/>
+            <Route path="fees"        element={<StudentFees/>}/>
+            <Route path="profile"     element={<StudentProfile/>}/>
           </Route>
 
           {/* Parent portal */}
           <Route path="/parent/login" element={<ParentLogin/>}/>
           <Route path="/parent" element={<RequireParent><ParentLayout/></RequireParent>}>
-            <Route index               element={<ParentDashboard/>}/>
-            <Route path="children"     element={<ParentChildren/>}/>
-            <Route path="children/:id" element={<ParentChildDetail/>}/>
-            <Route path="profile"      element={<ParentProfile/>}/>
+            <Route index                    element={<ParentDashboard/>}/>
+            <Route path="children"          element={<ParentChildren/>}/>
+            <Route path="children/:id"      element={<ParentChildDetail/>}/>
+            <Route path="children/:id/edit" element={<ParentChildEdit/>}/>
+            <Route path="profile"           element={<ParentProfile/>}/>
           </Route>
 
           {/* Print pages */}

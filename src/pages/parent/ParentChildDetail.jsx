@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ClipboardList, Receipt, BookOpen } from 'lucide-react';
+import { ArrowLeft, ClipboardList, Receipt, BookOpen, NotebookPen, CalendarDays, CreditCard, X, Banknote, Smartphone, Edit3, MessageCircle, Calendar } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
-import { formatMoney, formatDate, gradeOf } from '@/lib/format';
+import { useSettings } from '@/context/SettingsContext';
+import { formatMoney, formatDate, gradeOf, daysUntil } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 const STATUS_TONE = {
@@ -16,10 +17,13 @@ const STATUS_TONE = {
 export default function ParentChildDetail() {
   const { id } = useParams();
   const { parent } = useAuth();
+  const { settings } = useSettings();
   const [child, setChild] = useState(null);
   const [marksByAssessment, setMarksByAssessment] = useState({});
   const [invoices, setInvoices] = useState([]);
   const [payments, setPayments] = useState([]);
+  const [homework, setHomework] = useState([]);
+  const [showPay, setShowPay] = useState(false);
 
   useEffect(() => {
     if (!parent?.id) return;
@@ -42,6 +46,12 @@ export default function ParentChildDetail() {
       .then(({ data }) => setPayments((data || []).filter((p) => p.invoice?.student_id === id)));
   }, [id, parent]);
 
+  useEffect(() => {
+    if (!child?.current_class_id) return;
+    supabase.from('rc_homework').select('*, subject:rc_subjects(name)').eq('class_id', child.current_class_id).eq('active', true).order('due_date', { ascending: true })
+      .then(({ data }) => setHomework(data || []));
+  }, [child]);
+
   if (!child) return <p className="text-rc-500">Loading…</p>;
 
   const outstanding = invoices.reduce((s, r) => s + Math.max(0, Number(r.total_usd) - Number(r.paid_usd || 0)), 0);
@@ -52,9 +62,19 @@ export default function ParentChildDetail() {
     <div>
       <Link to="/parent" className="mb-4 inline-flex items-center gap-1.5 text-sm text-rc-500 hover:text-rc-900"><ArrowLeft size={14}/> Back</Link>
 
-      <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-rc-900">{child.display_name}</h1>
-        <p className="mt-1 text-sm text-rc-600">{child.class?.name || 'No class'} · {child.student_code}</p>
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-rc-900">{child.display_name}</h1>
+          <p className="mt-1 text-sm text-rc-600">{child.class?.name || 'No class'} · {child.student_code}</p>
+        </div>
+        <div className="flex gap-2">
+          <Link to={`/parent/children/${id}/edit`} className="btn-secondary text-xs"><Edit3 size={12}/> Edit profile</Link>
+          {outstanding > 0 && (
+            <button onClick={() => setShowPay(true)} className="inline-flex items-center gap-2 rounded-lg border-2 border-emerald-600 bg-emerald-500 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white shadow-sm hover:bg-emerald-600">
+              <CreditCard size={14}/> Pay fees
+            </button>
+          )}
+        </div>
       </header>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -133,6 +153,83 @@ export default function ParentChildDetail() {
           </div>
         )}
       </section>
+
+      {/* Homework for the class */}
+      {homework.length > 0 && (
+        <section className="mt-6 card">
+          <h2 className="font-display text-lg font-bold text-rc-900 inline-flex items-center gap-2"><NotebookPen size={18} className="text-rc-700"/> Homework</h2>
+          <div className="mt-3 space-y-2">
+            {homework.slice(0, 5).map((h) => {
+              const d = daysUntil(h.due_date);
+              const overdue = d != null && d < 0;
+              return (
+                <div key={h.id} className={cn('rounded-lg border border-rc-200 bg-rc-50/40 p-3', overdue && 'border-rose-200 bg-rose-50/40')}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {h.subject && <span className="chip">{h.subject.name}</span>}
+                    <p className="font-semibold text-rc-900">{h.title}</p>
+                  </div>
+                  {h.description && <p className="mt-1 text-xs text-rc-700">{h.description}</p>}
+                  {h.due_date && (
+                    <p className={cn('mt-1 inline-flex items-center gap-1 text-xs', overdue ? 'text-rose-700 font-semibold' : 'text-rc-500')}>
+                      <Calendar size={11}/> Due {formatDate(h.due_date)}{d != null && (overdue ? ` (${Math.abs(d)} days overdue)` : d === 0 ? ' · today' : d === 1 ? ' · tomorrow' : ` · in ${d} days`)}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Pay fees modal — PayNow + cash office */}
+      {showPay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-rc-900/40 p-4" onClick={() => setShowPay(false)}>
+          <div onClick={(e) => e.stopPropagation()} className="w-full max-w-md overflow-hidden rounded-2xl border border-rc-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-3 border-b border-rc-200 bg-rc-50 px-5 py-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rc-700">Pay fees</p>
+                <p className="font-display text-lg font-bold text-rc-900">Outstanding: {formatMoney({ amount: outstanding, currency: 'USD' })}</p>
+              </div>
+              <button onClick={() => setShowPay(false)} className="rounded-md p-2 hover:bg-rc-100"><X size={18}/></button>
+            </div>
+            <div className="space-y-3 p-5">
+              <a
+                href={settings?.paynow_url || 'https://www.paynow.co.zw/'}
+                target="_blank" rel="noopener noreferrer"
+                className="flex items-start gap-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4 transition hover:border-emerald-500"
+              >
+                <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-emerald-500 text-white"><Smartphone size={18}/></div>
+                <div>
+                  <p className="font-display text-base font-bold text-rc-900">Pay online via PayNow</p>
+                  <p className="text-xs text-rc-700">EcoCash · OneMoney · Innbucks · Visa / Mastercard</p>
+                  {settings?.paynow_account && <p className="mt-1 text-[10px] text-rc-500">{settings.paynow_account}</p>}
+                </div>
+              </a>
+
+              <div className="rounded-xl border border-rc-200 bg-rc-50/40 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-rc-900 text-white"><Banknote size={18}/></div>
+                  <div>
+                    <p className="font-display text-base font-bold text-rc-900">Cash at the office</p>
+                    <p className="text-xs text-rc-700">{settings?.cash_office_hours || 'Mon-Fri 8am-4pm at the Admin Block.'}</p>
+                    <p className="mt-1 text-[10px] text-rc-500">A printed receipt is issued on the spot.</p>
+                  </div>
+                </div>
+              </div>
+
+              {settings?.whatsapp_phone && (
+                <a
+                  href={`https://wa.me/${settings.whatsapp_phone.replace(/\D/g, '').replace(/^0/, '263')}?text=${encodeURIComponent(`Hi Ridgecrest — I'd like to pay fees for ${child.display_name} (${child.student_code}).`)}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 rounded-xl border border-rc-200 bg-white p-3 text-sm text-emerald-700 hover:bg-emerald-50"
+                >
+                  <MessageCircle size={16}/> Or chat to the bursar on WhatsApp
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

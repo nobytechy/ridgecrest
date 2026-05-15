@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Home, ClipboardList, Receipt, UserCircle2, LogOut, Globe, Menu, X } from 'lucide-react';
+import { Home, ClipboardList, Receipt, UserCircle2, LogOut, Globe, Menu, X, CalendarDays, NotebookPen } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -7,10 +7,12 @@ import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 
 const NAV = [
-  { to: '/student',         icon: Home,          label: 'My Dashboard', end: true },
-  { to: '/student/marks',   icon: ClipboardList, label: 'My Marks' },
-  { to: '/student/fees',    icon: Receipt,       label: 'My Fees' },
-  { to: '/student/profile', icon: UserCircle2,   label: 'My Profile' },
+  { to: '/student',           icon: Home,          label: 'My Dashboard', end: true },
+  { to: '/student/marks',     icon: ClipboardList, label: 'My Marks' },
+  { to: '/student/timetable', icon: CalendarDays,  label: 'My Timetable' },
+  { to: '/student/homework',  icon: NotebookPen,   label: 'Homework' },
+  { to: '/student/fees',      icon: Receipt,       label: 'My Fees' },
+  { to: '/student/profile',   icon: UserCircle2,   label: 'My Profile' },
 ];
 
 export default function StudentLayout() {

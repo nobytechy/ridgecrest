@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users2, GraduationCap, Users, BookOpen, ClipboardList,
   Receipt, Megaphone, Settings, LogOut, Menu, X, Globe, School,
+  NotebookPen, CalendarDays, Image as ImageIcon,
 } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -16,8 +17,12 @@ const NAV = [
   { to: '/admin/staff',        icon: Users2,          label: 'Staff' },
   { to: '/admin/classes',      icon: School,          label: 'Classes' },
   { to: '/admin/subjects',     icon: BookOpen,        label: 'Subjects' },
+  { to: '/admin/schemes',      icon: NotebookPen,     label: 'Scheme books' },
+  { to: '/admin/timetable',    icon: CalendarDays,    label: 'Timetable' },
+  { to: '/admin/homework',     icon: NotebookPen,     label: 'Homework' },
   { to: '/admin/marks',        icon: ClipboardList,   label: 'Marks' },
   { to: '/admin/fees',         icon: Receipt,         label: 'Fees & Payments' },
+  { to: '/admin/gallery',      icon: ImageIcon,       label: 'Gallery' },
   { to: '/admin/announcements',icon: Megaphone,       label: 'Announcements' },
   { to: '/admin/settings',     icon: Settings,        label: 'Settings' },
 ];

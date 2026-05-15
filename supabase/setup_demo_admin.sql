@@ -1,21 +1,27 @@
 -- ─────────────────────────────────────────────────────────────────────────
 --  Ridgecrest — setup_demo_admin.sql
 --
---  Run AFTER install.sql. Creates the auth users + demo enrolment data so
---  all three portals (admin, student, parent) work end-to-end.
+--  Run AFTER install.sql + primary_reseed.sql. Creates auth users and seeds
+--  a full enrolment so all three portals come alive.
 --
 --  Demo PINs:
---    Admin   1975  → EMP-001 (Admin Demo)
---    Teacher 2002  → EMP-002 (Mrs. Mhembere — Form 1A class teacher)
---    Bursar  3030  → EMP-003 (Mr. Ndoro — fees + payments)
---    Parent  3344  → PAR-2026-001 (Mr. T. Mukamuri — two children)
---    Student 2200  → STU-2026-001 (Tafara Mukamuri, Form 1A)
---    Student 2201  → STU-2026-002 (Rumbidzai Mukamuri, Form 2B)
+--    Admin            1975   EMP-001 (Admin Demo)
+--    Headmaster       5050   EMP-005 (Mr. S. Moyo)
+--    Grade-3 Teacher  2002   EMP-002 (Mrs. R. Mhembere)
+--    Bursar           3030   EMP-003 (Mr. T. Ndoro)
+--    ECD Teacher      4040   EMP-004 (Mrs. C. Sibanda)
+--    Parent           3344   PAR-2026-001 Mr. T. Mukamuri (Tafara + Rumbidzai)
+--    Parent           4455   PAR-2026-002 Mrs. M. Tebulo  (Manisha)
+--    Parent           5566   PAR-2026-003 Mrs. P. Chiweshe (Daniel)
+--    Student          2200   STU-2026-001 Tafara Mukamuri    (Grade 3)
+--    Student          2201   STU-2026-002 Rumbidzai Mukamuri (Grade 5)
+--    Student          3300   STU-2026-003 Manisha Tebulo     (Grade 3)
+--    Student          4400   STU-2026-004 Daniel Chiweshe    (Grade 4)
+--    Student          5500   STU-2026-005 Ratidzai Mukamuri  (ECD B)
 -- ─────────────────────────────────────────────────────────────────────────
 
 create extension if not exists pgcrypto;
 
--- Helper to create or refresh a Supabase auth user with a PIN as password.
 create or replace function public._rc_seed_user(p_email text, p_pin text, p_display_name text)
 returns uuid language plpgsql security definer set search_path = public, auth as $$
 declare v_id uuid;
@@ -68,71 +74,116 @@ begin
   insert into public.rc_staff (id, employee_id, display_name, role_id, status, pin, phone)
   values (v_id, 'EMP-003', 'Mr. T. Ndoro', 'bursar', 'active', '3030', '+263 77 303 0303')
   on conflict (employee_id) do update set id = excluded.id, role_id = 'bursar', status = 'active', pin = '3030';
+
+  v_id := public._rc_seed_user('emp-004@rc.local', '4040', 'Mrs. C. Sibanda');
+  insert into public.rc_staff (id, employee_id, display_name, role_id, status, pin, phone)
+  values (v_id, 'EMP-004', 'Mrs. C. Sibanda', 'teacher', 'active', '4040', '+263 77 404 0404')
+  on conflict (employee_id) do update set id = excluded.id, role_id = 'teacher', status = 'active', pin = '4040';
+
+  v_id := public._rc_seed_user('emp-005@rc.local', '5050', 'Mr. S. Moyo');
+  insert into public.rc_staff (id, employee_id, display_name, role_id, status, pin, phone)
+  values (v_id, 'EMP-005', 'Mr. S. Moyo', 'headmaster', 'active', '5050', '+263 77 505 0505')
+  on conflict (employee_id) do update set id = excluded.id, role_id = 'headmaster', status = 'active', pin = '5050';
 end $$;
 
--- Class teacher = Mrs. Mhembere for Grade 3A
-update public.rc_classes
-   set class_teacher_id = (select id from public.rc_staff where employee_id = 'EMP-002')
- where name = 'Grade 3A';
+-- Class teachers
+update public.rc_classes set class_teacher_id = (select id from public.rc_staff where employee_id = 'EMP-004') where name = 'ECD A';
+update public.rc_classes set class_teacher_id = (select id from public.rc_staff where employee_id = 'EMP-004') where name = 'ECD B';
+update public.rc_classes set class_teacher_id = (select id from public.rc_staff where employee_id = 'EMP-002') where name = 'Grade 3';
+update public.rc_classes set class_teacher_id = (select id from public.rc_staff where employee_id = 'EMP-005') where name = 'Grade 7';
 
--- ─── Class subjects (which subjects each class takes, taught by whom) ────
+-- Class subjects — Grade 3 (Mrs Mhembere teaches all core)
 insert into public.rc_class_subjects (class_id, subject_id, teacher_id)
-select c.id, s.id, (select id from public.rc_staff where employee_id = 'EMP-002')
-  from public.rc_classes c
- cross join public.rc_subjects s
- where c.name = 'Grade 3A'
+select '55555555-5555-5555-5555-000000000104', s.id,
+       (select id from public.rc_staff where employee_id = 'EMP-002')
+  from public.rc_subjects s where s.is_core
 on conflict (class_id, subject_id) do nothing;
 
+-- Class subjects — Grade 4 (also Mrs Mhembere for now)
 insert into public.rc_class_subjects (class_id, subject_id, teacher_id)
-select c.id, s.id, (select id from public.rc_staff where employee_id = 'EMP-002')
-  from public.rc_classes c
- cross join public.rc_subjects s
- where c.name = 'Grade 5'
+select '55555555-5555-5555-5555-000000000106', s.id,
+       (select id from public.rc_staff where employee_id = 'EMP-002')
+  from public.rc_subjects s where s.is_core
 on conflict (class_id, subject_id) do nothing;
 
--- ─── Parent + 2 children ─────────────────────────────────────────────────
+-- Class subjects — Grade 5 (Mrs Mhembere)
+insert into public.rc_class_subjects (class_id, subject_id, teacher_id)
+select '55555555-5555-5555-5555-000000000107', s.id,
+       (select id from public.rc_staff where employee_id = 'EMP-002')
+  from public.rc_subjects s where s.is_core
+on conflict (class_id, subject_id) do nothing;
+
+-- ─── Parents + Students ─────────────────────────────────────────────────
 do $$
 declare
-  v_parent  uuid;
-  v_stu_1   uuid;
-  v_stu_2   uuid;
-  -- Grade 3A / Grade 5 (post primary-reseed)
-  v_class_1a uuid := '55555555-5555-5555-5555-000000000104';
-  v_class_2b uuid := '55555555-5555-5555-5555-000000000107';
+  v_pid uuid; v_sid uuid;
+  v_class_ecdb  uuid := '55555555-5555-5555-5555-0000000000eb';
+  v_class_g3    uuid := '55555555-5555-5555-5555-000000000104';
+  v_class_g4    uuid := '55555555-5555-5555-5555-000000000106';
+  v_class_g5    uuid := '55555555-5555-5555-5555-000000000107';
 begin
-  v_parent := public._rc_seed_user('par-2026-001@rc.local', '3344', 'Mr. T. Mukamuri');
+  -- ── Parent 1: Mr. T. Mukamuri (Tafara + Rumbidzai + Ratidzai)
+  v_pid := public._rc_seed_user('par-2026-001@rc.local', '3344', 'Mr. T. Mukamuri');
   insert into public.rc_parents (id, parent_code, display_name, phone, whatsapp_phone, email, id_number, relationship, pin, force_pin_reset, status)
-  values (v_parent, 'PAR-2026-001', 'Mr. T. Mukamuri', '+263 77 334 4334', '+263 77 334 4334', 't.mukamuri@gmail.com', '63-1234567-A-12', 'Father', '3344', false, 'active')
+  values (v_pid, 'PAR-2026-001', 'Mr. T. Mukamuri', '+263 77 334 4334', '+263 77 334 4334', 't.mukamuri@gmail.com', '63-1234567-A-12', 'Father', '3344', false, 'active')
   on conflict (parent_code) do update set id = excluded.id, pin = '3344', status = 'active', force_pin_reset = false;
 
-  v_stu_1 := public._rc_seed_user('stu-2026-001@rc.local', '2200', 'Tafara Mukamuri');
+  v_sid := public._rc_seed_user('stu-2026-001@rc.local', '2200', 'Tafara Mukamuri');
   insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
-  values (v_stu_1, 'STU-2026-001', 'Tafara Mukamuri', 'Taf', '2013-04-22', 'M', v_class_1a, 2026, '2200', false, 'active')
-  on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_1a, pin = '2200', status = 'active', force_pin_reset = false;
+  values (v_sid, 'STU-2026-001', 'Tafara Mukamuri', 'Taf', '2017-04-22', 'M', v_class_g3, 2025, '2200', false, 'active')
+  on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_g3, pin = '2200', status = 'active', force_pin_reset = false;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
 
-  v_stu_2 := public._rc_seed_user('stu-2026-002@rc.local', '2201', 'Rumbidzai Mukamuri');
+  v_sid := public._rc_seed_user('stu-2026-002@rc.local', '2201', 'Rumbidzai Mukamuri');
   insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
-  values (v_stu_2, 'STU-2026-002', 'Rumbidzai Mukamuri', 'Rumbi', '2012-08-11', 'F', v_class_2b, 2025, '2201', false, 'active')
-  on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_2b, pin = '2201', status = 'active', force_pin_reset = false;
+  values (v_sid, 'STU-2026-002', 'Rumbidzai Mukamuri', 'Rumbi', '2015-08-11', 'F', v_class_g5, 2023, '2201', false, 'active')
+  on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_g5, pin = '2201', status = 'active', force_pin_reset = false;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
 
-  -- Link parent to both children (primary contact for both)
-  insert into public.rc_student_parents (student_id, parent_id, is_primary) values
-    (v_stu_1, v_parent, true),
-    (v_stu_2, v_parent, true)
-  on conflict (student_id, parent_id) do update set is_primary = true;
+  v_sid := public._rc_seed_user('stu-2026-005@rc.local', '5500', 'Ratidzai Mukamuri');
+  insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
+  values (v_sid, 'STU-2026-005', 'Ratidzai Mukamuri', 'Rati', '2021-03-19', 'F', v_class_ecdb, 2026, '5500', false, 'active')
+  on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_ecdb, pin = '5500', status = 'active', force_pin_reset = false;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
+
+  -- ── Parent 2: Mrs. M. Tebulo (Manisha)
+  v_pid := public._rc_seed_user('par-2026-002@rc.local', '4455', 'Mrs. M. Tebulo');
+  insert into public.rc_parents (id, parent_code, display_name, phone, whatsapp_phone, email, id_number, relationship, pin, force_pin_reset, status)
+  values (v_pid, 'PAR-2026-002', 'Mrs. M. Tebulo', '+263 77 445 5544', '+263 77 445 5544', 'm.tebulo@gmail.com', '63-9876543-B-12', 'Mother', '4455', false, 'active')
+  on conflict (parent_code) do update set id = excluded.id, pin = '4455', status = 'active', force_pin_reset = false;
+
+  v_sid := public._rc_seed_user('stu-2026-003@rc.local', '3300', 'Manisha Tebulo');
+  insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
+  values (v_sid, 'STU-2026-003', 'Manisha Tebulo', 'Manny', '2017-07-15', 'F', v_class_g3, 2025, '3300', false, 'active')
+  on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_g3, pin = '3300', status = 'active', force_pin_reset = false;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
+
+  -- ── Parent 3: Mrs. P. Chiweshe (Daniel)
+  v_pid := public._rc_seed_user('par-2026-003@rc.local', '5566', 'Mrs. P. Chiweshe');
+  insert into public.rc_parents (id, parent_code, display_name, phone, whatsapp_phone, email, id_number, relationship, pin, force_pin_reset, status)
+  values (v_pid, 'PAR-2026-003', 'Mrs. P. Chiweshe', '+263 77 556 6655', '+263 77 556 6655', 'p.chiweshe@yahoo.com', '63-5555555-C-12', 'Mother', '5566', false, 'active')
+  on conflict (parent_code) do update set id = excluded.id, pin = '5566', status = 'active', force_pin_reset = false;
+
+  v_sid := public._rc_seed_user('stu-2026-004@rc.local', '4400', 'Daniel Chiweshe');
+  insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
+  values (v_sid, 'STU-2026-004', 'Daniel Chiweshe', 'Dan', '2016-11-02', 'M', v_class_g4, 2024, '4400', false, 'active')
+  on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_g4, pin = '4400', status = 'active', force_pin_reset = false;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
 end $$;
 
--- ─── Assessment (Mid-Term Test, Term 1 2026) + marks for both kids ────────
+-- ─── Mid-term test + marks for Grade 3 + Grade 5 ─────────────────────────
 do $$
 declare
-  v_term       uuid := '44444444-4444-4444-4444-000000002602';   -- Term 2 2026
+  v_term       uuid := '44444444-4444-4444-4444-000000002602';
   v_assessment uuid;
-  v_stu_1      uuid := (select id from public.rc_students where student_code = 'STU-2026-001');
-  v_stu_2      uuid := (select id from public.rc_students where student_code = 'STU-2026-002');
+  v_tafara     uuid := (select id from public.rc_students where student_code = 'STU-2026-001');
+  v_rumbi      uuid := (select id from public.rc_students where student_code = 'STU-2026-002');
+  v_manisha    uuid := (select id from public.rc_students where student_code = 'STU-2026-003');
+  v_daniel     uuid := (select id from public.rc_students where student_code = 'STU-2026-004');
   v_teacher    uuid := (select id from public.rc_staff    where employee_id  = 'EMP-002');
 begin
   insert into public.rc_assessments (term_id, name, kind, max_mark, scheduled_for, is_published)
-  values (v_term, 'Mid-Term Test', 'test', 100, current_date - interval '7 days', true)
+  values (v_term, 'Mid-Term Test', 'test', 100, current_date - interval '5 days', true)
   on conflict do nothing
   returning id into v_assessment;
 
@@ -141,75 +192,87 @@ begin
      where term_id = v_term and name = 'Mid-Term Test' limit 1;
   end if;
 
-  -- Marks for Tafara (Form 1A)
+  -- Tafara (Grade 3)
   insert into public.rc_results (student_id, assessment_id, subject_id, mark, grade, remarks, entered_by) values
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000101', 78, 'B', 'Strong problem-solving.',           v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000102', 72, 'B', 'Comprehension excellent.',          v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000103', 65, 'C', 'Improving steadily.',               v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000104', 81, 'A', 'Top of class in practicals.',       v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000105', 60, 'C', 'Needs to revise more dates.',       v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000110', 88, 'A', 'Outstanding in coding tasks.',      v_teacher)
+    (v_tafara, v_assessment, '33333333-3333-3333-3333-000000000101', 78, 'B', 'Strong problem-solving.',         v_teacher),
+    (v_tafara, v_assessment, '33333333-3333-3333-3333-000000000102', 72, 'B', 'Comprehension excellent.',        v_teacher),
+    (v_tafara, v_assessment, '33333333-3333-3333-3333-000000000103', 65, 'C', 'Improving steadily in Shona.',    v_teacher),
+    (v_tafara, v_assessment, '33333333-3333-3333-3333-000000000104', 81, 'A', 'Top of class in Heritage.',       v_teacher),
+    (v_tafara, v_assessment, '33333333-3333-3333-3333-000000000105', 60, 'C', 'Pay attention in practical work.',v_teacher)
   on conflict (student_id, assessment_id, subject_id) do update set mark = excluded.mark, grade = excluded.grade, remarks = excluded.remarks;
 
-  -- Marks for Rumbi (Form 2B)
+  -- Manisha (Grade 3) — strong all-rounder
   insert into public.rc_results (student_id, assessment_id, subject_id, mark, grade, remarks, entered_by) values
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000101', 84, 'A', 'Excellent.',                         v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000102', 76, 'B', 'Strong essays.',                     v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000103', 70, 'B', 'Polished delivery.',                 v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000104', 68, 'C', 'Focus more on the second paper.',    v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000105', 74, 'B', 'Improved analysis.',                 v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000110', 92, 'A', 'Distinction-level work.',            v_teacher)
+    (v_manisha, v_assessment, '33333333-3333-3333-3333-000000000101', 92, 'A', 'Excellent — fastest in mental maths.', v_teacher),
+    (v_manisha, v_assessment, '33333333-3333-3333-3333-000000000102', 88, 'A', 'Beautiful descriptive writing.',       v_teacher),
+    (v_manisha, v_assessment, '33333333-3333-3333-3333-000000000103', 85, 'A', 'Strong reading + ngano.',              v_teacher),
+    (v_manisha, v_assessment, '33333333-3333-3333-3333-000000000104', 90, 'A', 'Very engaged in class discussion.',    v_teacher),
+    (v_manisha, v_assessment, '33333333-3333-3333-3333-000000000105', 87, 'A', 'Top mark on water-cycle project.',     v_teacher)
+  on conflict (student_id, assessment_id, subject_id) do update set mark = excluded.mark, grade = excluded.grade, remarks = excluded.remarks;
+
+  -- Rumbi (Grade 5)
+  insert into public.rc_results (student_id, assessment_id, subject_id, mark, grade, remarks, entered_by) values
+    (v_rumbi, v_assessment, '33333333-3333-3333-3333-000000000101', 84, 'A', 'Excellent.',                        v_teacher),
+    (v_rumbi, v_assessment, '33333333-3333-3333-3333-000000000102', 76, 'B', 'Strong essays.',                    v_teacher),
+    (v_rumbi, v_assessment, '33333333-3333-3333-3333-000000000103', 70, 'B', 'Polished delivery.',                v_teacher),
+    (v_rumbi, v_assessment, '33333333-3333-3333-3333-000000000104', 68, 'C', 'Focus more on geography.',          v_teacher),
+    (v_rumbi, v_assessment, '33333333-3333-3333-3333-000000000105', 74, 'B', 'Improved analysis.',                v_teacher)
+  on conflict (student_id, assessment_id, subject_id) do update set mark = excluded.mark, grade = excluded.grade, remarks = excluded.remarks;
+
+  -- Daniel (Grade 4)
+  insert into public.rc_results (student_id, assessment_id, subject_id, mark, grade, remarks, entered_by) values
+    (v_daniel, v_assessment, '33333333-3333-3333-3333-000000000101', 66, 'C', 'Needs more practice with fractions.', v_teacher),
+    (v_daniel, v_assessment, '33333333-3333-3333-3333-000000000102', 70, 'B', 'Good vocabulary growth.',             v_teacher),
+    (v_daniel, v_assessment, '33333333-3333-3333-3333-000000000103', 62, 'C', 'Practice oral Shona at home.',        v_teacher),
+    (v_daniel, v_assessment, '33333333-3333-3333-3333-000000000104', 75, 'B', 'Engaged in class.',                   v_teacher),
+    (v_daniel, v_assessment, '33333333-3333-3333-3333-000000000105', 68, 'C', 'Good project participation.',         v_teacher)
   on conflict (student_id, assessment_id, subject_id) do update set mark = excluded.mark, grade = excluded.grade, remarks = excluded.remarks;
 end $$;
 
--- ─── Invoices (Term 1 2026) for both children + a partial payment ────────
+-- ─── Invoices for Term 2 2026 + sample payments ─────────────────────────
 do $$
 declare
-  v_term    uuid := '44444444-4444-4444-4444-000000000001';
-  v_stu_1   uuid := (select id from public.rc_students where student_code = 'STU-2026-001');
-  v_stu_2   uuid := (select id from public.rc_students where student_code = 'STU-2026-002');
-  v_inv_1   uuid;
-  v_inv_2   uuid;
-  v_total_1 numeric(12,2);
-  v_total_2 numeric(12,2);
+  v_term    uuid := '44444444-4444-4444-4444-000000002602';
+  rec       record;
+  v_total   numeric;
+  v_inv     uuid;
+  v_invno   text;
+  v_n       int := 0;
 begin
-  -- Sum fee structure per class
-  select coalesce(sum(amount_usd), 0) into v_total_1
-    from public.rc_fee_structures
-   where term_id = v_term and class_id = '55555555-5555-5555-5555-000000000001';
-  select coalesce(sum(amount_usd), 0) into v_total_2
-    from public.rc_fee_structures
-   where term_id = v_term and class_id = '55555555-5555-5555-5555-000000000002';
+  for rec in
+    select s.id as student_id, s.student_code, s.current_class_id
+      from public.rc_students s
+     where s.status = 'active' and s.current_class_id is not null
+  loop
+    v_n := v_n + 1;
+    select coalesce(sum(amount_usd), 0) into v_total
+      from public.rc_fee_structures
+     where term_id = v_term and class_id = rec.current_class_id and is_mandatory;
+    v_invno := 'INV-2026-T2-' || lpad(v_n::text, 4, '0');
+    insert into public.rc_invoices (invoice_no, student_id, term_id, total_usd, paid_usd, due_date, status, notes)
+    values (v_invno, rec.student_id, v_term, v_total, 0, current_date + interval '30 days', 'open', 'Term 2 2026 fees')
+    on conflict (invoice_no) do nothing;
+    select id into v_inv from public.rc_invoices where invoice_no = v_invno;
 
-  insert into public.rc_invoices (invoice_no, student_id, term_id, total_usd, paid_usd, due_date, status, notes)
-  values
-    ('INV-2026-T1-0001', v_stu_1, v_term, v_total_1, 200.00, current_date + interval '30 days', 'partial',
-     'Term 1 2026 — partial payment received, balance due before mid-term.'),
-    ('INV-2026-T1-0002', v_stu_2, v_term, v_total_2, 0.00,   current_date + interval '30 days', 'open',
-     'Term 1 2026 — full balance outstanding.')
-  on conflict (invoice_no) do nothing;
-
-  select id into v_inv_1 from public.rc_invoices where invoice_no = 'INV-2026-T1-0001';
-  select id into v_inv_2 from public.rc_invoices where invoice_no = 'INV-2026-T1-0002';
-
-  -- A partial payment of $200 on invoice 1
-  insert into public.rc_payments (receipt_no, invoice_id, amount_usd, currency, method, reference, notes)
-  values ('RCT-2026-0001', v_inv_1, 200.00, 'USD', 'cash', null, 'Demo seed — partial fees deposit.')
-  on conflict (receipt_no) do nothing;
+    -- Tafara: partial; Manisha: paid; Rumbi: open; Daniel: open; Ratidzai: open
+    if rec.student_code = 'STU-2026-001' then
+      insert into public.rc_payments (receipt_no, invoice_id, amount_usd, currency, method, notes)
+      values ('RCT-2026-0001', v_inv, 150.00, 'USD', 'cash', 'Demo seed — partial deposit') on conflict do nothing;
+      update public.rc_invoices set paid_usd = 150.00, status = 'partial' where id = v_inv;
+    elsif rec.student_code = 'STU-2026-003' then
+      insert into public.rc_payments (receipt_no, invoice_id, amount_usd, currency, method, notes)
+      values ('RCT-2026-0002', v_inv, v_total, 'USD', 'paynow', 'Demo seed — full payment via PayNow') on conflict do nothing;
+      update public.rc_invoices set paid_usd = v_total, status = 'paid' where id = v_inv;
+    end if;
+  end loop;
 end $$;
 
--- ─── Sanity check ────────────────────────────────────────────────────────
-select 'staff' as kind, employee_id as code, display_name, role_id::text as role_or_class, status, pin
-  from public.rc_staff
-union all
-select 'student', student_code, display_name,
-       (select name from public.rc_classes c where c.id = s.current_class_id),
-       status, pin
-  from public.rc_students s
-union all
-select 'parent', parent_code, display_name, relationship, status, pin
-  from public.rc_parents;
+select 'seed admin + parents + students complete' as status,
+       (select count(*) from public.rc_staff)    as staff,
+       (select count(*) from public.rc_parents)  as parents,
+       (select count(*) from public.rc_students) as students,
+       (select count(*) from public.rc_invoices) as invoices;
 
-select public.rc_resolve_staff_pin('1975')   as admin_pin_resolves,
-       public.rc_resolve_student_pin('2200') as student_pin_resolves,
-       public.rc_resolve_parent_pin('3344')  as parent_pin_resolves;
+select public.rc_resolve_staff_pin('1975')   as admin_pin,
+       public.rc_resolve_student_pin('3300') as manisha_pin,
+       public.rc_resolve_parent_pin('4455')  as tebulo_pin;

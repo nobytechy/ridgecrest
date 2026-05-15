@@ -1,5 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Menu, X, Phone, MapPin, Mail, LogIn, UserCircle2, LayoutDashboard, LogOut, BookOpen, GraduationCap, Users } from 'lucide-react';
+import { Menu, X, Phone, MapPin, Mail, LogIn, UserCircle2, LayoutDashboard, LogOut, BookOpen, GraduationCap, Users, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import Logo from '@/components/Logo';
@@ -13,6 +13,7 @@ const NAV = [
   { to: '/about',       label: 'About' },
   { to: '/academics',   label: 'Academics' },
   { to: '/admissions',  label: 'Admissions' },
+  { to: '/gallery',     label: 'Gallery' },
   { to: '/contact',     label: 'Contact' },
 ];
 
@@ -157,7 +158,7 @@ export default function PublicLayout() {
             <a href="https://wa.me/263774603865?text=Hi%20Noby%20%E2%80%94%20I%20saw%20your%20work%20and%20wanted%20to%20chat"
                target="_blank" rel="noopener noreferrer"
                className="inline-flex items-center gap-1 font-semibold text-rc-700 hover:text-rc-900 hover:underline">
-              <BookOpen size={11}/> Noby
+              <MessageCircle size={11}/> Noby
             </a>
           </p>
         </div>
