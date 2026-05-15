@@ -176,17 +176,23 @@ Used by every portal:
 
 ---
 
-## Supabase setup order
+## Supabase setup
 
-In Supabase → SQL Editor, run these files in this order:
+Open Supabase → SQL Editor → paste **`supabase/install.sql`** → Run.
 
-1. `supabase/install.sql` — schema, RLS policies, PIN resolvers, helpers, base seed (subjects, terms, classes, fee structures)
-2. `supabase/primary_reseed.sql` — primary-school class reseed (ECD A/B + Grade 1-7)
-3. `supabase/holidays_module.sql` — Zimbabwe national calendar + holiday rendering
-4. `supabase/schemes_module.sql` — scheme-of-work tables + Grade 3 Term 2 seed
-5. `supabase/admin_functions.sql` — admin RPCs (create/delete/reset PIN for staff, students, parents)
-6. `supabase/setup_demo_admin.sql` — auth users + demo enrolment (admin + teacher + bursar + Mukamuri family + Tebulo family + marks + invoices)
-7. `supabase/modules_extra.sql` — homework, timetable, gallery, inquiries
-8. `supabase/modules_v2.sql` — attendance, term reports, class feed + sibling-discount settings
+One file, one click. The script is re-runnable (re-run any time you want to refresh the demo). It sets up:
 
-After running all eight, the database is fully seeded and the demo credentials in the table above work.
+- Every table + index + trigger
+- All RLS policies (public / staff / student / parent)
+- PIN resolvers + admin RPCs (`rc_admin_create_staff`, `rc_admin_create_student`, `rc_admin_create_parent`, `rc_admin_reset_pin`, `rc_admin_delete_user`, `rc_admin_link_parent_child`, `rc_parent_update_child`)
+- Storage bucket `rc-public`
+- Site settings (school name, motto, PayNow URL, sibling-discount %)
+- Term 2 2026 active + all three 2026 terms
+- Primary curriculum subjects + ECD A/B + Grade 1-7
+- Fee structure for every class for Term 2
+- 2026 Zimbabwe national calendar
+- Auth users + staff (5) + parents (3) + students (5) + marks + invoices + payments
+- Grade 3 timetable, homework, attendance, term reports, class feed, schemes of work
+- Sample gallery (2 albums × 3 photos)
+
+When it finishes, the last `select` echoes counts and verifies the three demo PINs resolve correctly.

@@ -59,7 +59,7 @@ Production preview: `npm run build && npm run preview` → http://localhost:4189
 
 ### Supabase setup
 
-Run the eight SQL files in `supabase/` in the order listed in **[Instructions.md → Supabase setup order](Instructions.md#supabase-setup-order)**. Takes about two minutes total in the SQL Editor.
+Open Supabase → SQL Editor → paste **`supabase/install.sql`** → Run. That's the whole setup — one file, re-runnable, seeds schema + RLS + demo enrolment for the pitch. About 30 seconds.
 
 ### Deployment (Netlify)
 
@@ -94,9 +94,7 @@ src/
     student/        Dashboard, Marks, Timetable, Homework, Fees, Profile
     parent/         Dashboard, Children, ChildDetail, ChildEdit, Profile
     print/          PrintReceipt, PrintReport
-supabase/           install.sql · primary_reseed.sql · holidays_module.sql ·
-                    schemes_module.sql · admin_functions.sql · setup_demo_admin.sql ·
-                    modules_extra.sql · modules_v2.sql
+supabase/           install.sql   (one file — schema + RLS + functions + seed)
 public/             PWA icons, _redirects, .htaccess, reset.html
 ```
 
