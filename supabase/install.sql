@@ -29,7 +29,10 @@
 --    Student          5500   STU-2026-005 Ratidzai Mukamuri  (ECD B)
 -- ─────────────────────────────────────────────────────────────────────────
 
-create extension if not exists pgcrypto;
+-- Supabase keeps extensions in the `extensions` schema. We reference
+-- gen_salt / crypt as `extensions.gen_salt(...)` / `extensions.crypt(...)`
+-- explicitly below so search_path quirks never break the seed.
+create extension if not exists pgcrypto with schema extensions;
 
 create or replace function public.rc_touch_updated_at()
 returns trigger language plpgsql as $$
@@ -554,7 +557,7 @@ grant execute on function public.rc_resolve_parent_pin(text)  to anon, authentic
 -- ═══════════════════════════════════════════════════════════════════════
 
 create or replace function public._rc_provision_user(p_email text, p_pin text, p_display_name text)
-returns uuid language plpgsql security definer set search_path = public, auth as $$
+returns uuid language plpgsql security definer set search_path = public, auth, extensions as $$
 declare v_id uuid;
 begin
   if not public.rc_is_admin() then raise exception 'Only admins can provision users'; end if;
@@ -572,7 +575,7 @@ begin
   ) values (
     '00000000-0000-0000-0000-000000000000', v_id,
     'authenticated', 'authenticated', p_email,
-    crypt(p_pin, gen_salt('bf')), now(),
+    extensions.crypt(p_pin, extensions.gen_salt('bf')), now(),
     '{"provider":"email","providers":["email"]}'::jsonb,
     jsonb_build_object('display_name', p_display_name),
     now(), now(), '', '', '', ''
@@ -639,12 +642,12 @@ end $$;
 
 create or replace function public.rc_admin_reset_pin(
   p_user_id uuid, p_new_pin text, p_force_pin_reset boolean default true
-) returns void language plpgsql security definer set search_path = public, auth as $$
+) returns void language plpgsql security definer set search_path = public, auth, extensions as $$
 begin
   if not public.rc_is_admin() then raise exception 'Only admins can reset PINs'; end if;
   if p_new_pin is null or length(p_new_pin) < 4 then raise exception 'PIN must be at least 4 digits'; end if;
 
-  update auth.users set encrypted_password = crypt(p_new_pin, gen_salt('bf')), updated_at = now() where id = p_user_id;
+  update auth.users set encrypted_password = extensions.crypt(p_new_pin, extensions.gen_salt('bf')), updated_at = now() where id = p_user_id;
 
   update public.rc_staff    set pin = p_new_pin                                              where id = p_user_id;
   update public.rc_students set pin = p_new_pin, force_pin_reset = p_force_pin_reset         where id = p_user_id;
@@ -960,7 +963,7 @@ on conflict (date) do nothing;
 -- ═══════════════════════════════════════════════════════════════════════
 
 create or replace function public._rc_seed_user(p_email text, p_pin text, p_display_name text)
-returns uuid language plpgsql security definer set search_path = public, auth as $$
+returns uuid language plpgsql security definer set search_path = public, auth, extensions as $$
 declare v_id uuid;
 begin
   select id into v_id from auth.users where email = p_email;
@@ -974,7 +977,7 @@ begin
     ) values (
       '00000000-0000-0000-0000-000000000000', v_id,
       'authenticated', 'authenticated', p_email,
-      crypt(p_pin, gen_salt('bf')), now(),
+      extensions.crypt(p_pin, extensions.gen_salt('bf')), now(),
       '{"provider":"email","providers":["email"]}'::jsonb,
       jsonb_build_object('display_name', p_display_name),
       now(), now(), '', '', '', ''
@@ -985,7 +988,7 @@ begin
               'email', p_email, now(), now(), now());
   else
     update auth.users
-       set encrypted_password = crypt(p_pin, gen_salt('bf')),
+       set encrypted_password = extensions.crypt(p_pin, extensions.gen_salt('bf')),
            email_confirmed_at = coalesce(email_confirmed_at, now()),
            updated_at = now()
      where id = v_id;
