@@ -70,24 +70,24 @@ begin
   on conflict (employee_id) do update set id = excluded.id, role_id = 'bursar', status = 'active', pin = '3030';
 end $$;
 
--- Class teacher = Mrs. Mhembere for Form 1A
+-- Class teacher = Mrs. Mhembere for Grade 3A
 update public.rc_classes
    set class_teacher_id = (select id from public.rc_staff where employee_id = 'EMP-002')
- where name = 'Form 1A';
+ where name = 'Grade 3A';
 
 -- ─── Class subjects (which subjects each class takes, taught by whom) ────
 insert into public.rc_class_subjects (class_id, subject_id, teacher_id)
 select c.id, s.id, (select id from public.rc_staff where employee_id = 'EMP-002')
   from public.rc_classes c
  cross join public.rc_subjects s
- where c.name = 'Form 1A'
+ where c.name = 'Grade 3A'
 on conflict (class_id, subject_id) do nothing;
 
 insert into public.rc_class_subjects (class_id, subject_id, teacher_id)
 select c.id, s.id, (select id from public.rc_staff where employee_id = 'EMP-002')
   from public.rc_classes c
  cross join public.rc_subjects s
- where c.name = 'Form 2B'
+ where c.name = 'Grade 5'
 on conflict (class_id, subject_id) do nothing;
 
 -- ─── Parent + 2 children ─────────────────────────────────────────────────
@@ -96,8 +96,9 @@ declare
   v_parent  uuid;
   v_stu_1   uuid;
   v_stu_2   uuid;
-  v_class_1a uuid := '55555555-5555-5555-5555-000000000001';
-  v_class_2b uuid := '55555555-5555-5555-5555-000000000002';
+  -- Grade 3A / Grade 5 (post primary-reseed)
+  v_class_1a uuid := '55555555-5555-5555-5555-000000000104';
+  v_class_2b uuid := '55555555-5555-5555-5555-000000000107';
 begin
   v_parent := public._rc_seed_user('par-2026-001@rc.local', '3344', 'Mr. T. Mukamuri');
   insert into public.rc_parents (id, parent_code, display_name, phone, whatsapp_phone, email, id_number, relationship, pin, force_pin_reset, status)
@@ -124,7 +125,7 @@ end $$;
 -- ─── Assessment (Mid-Term Test, Term 1 2026) + marks for both kids ────────
 do $$
 declare
-  v_term       uuid := '44444444-4444-4444-4444-000000000001';
+  v_term       uuid := '44444444-4444-4444-4444-000000002602';   -- Term 2 2026
   v_assessment uuid;
   v_stu_1      uuid := (select id from public.rc_students where student_code = 'STU-2026-001');
   v_stu_2      uuid := (select id from public.rc_students where student_code = 'STU-2026-002');
@@ -142,22 +143,22 @@ begin
 
   -- Marks for Tafara (Form 1A)
   insert into public.rc_results (student_id, assessment_id, subject_id, mark, grade, remarks, entered_by) values
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000001', 78, 'B', 'Strong problem-solving.',           v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000002', 72, 'B', 'Comprehension excellent.',          v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000003', 65, 'C', 'Improving steadily.',               v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000004', 81, 'A', 'Top of class in practicals.',       v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000005', 60, 'C', 'Needs to revise more dates.',       v_teacher),
-    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000006', 88, 'A', 'Outstanding in coding tasks.',      v_teacher)
+    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000101', 78, 'B', 'Strong problem-solving.',           v_teacher),
+    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000102', 72, 'B', 'Comprehension excellent.',          v_teacher),
+    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000103', 65, 'C', 'Improving steadily.',               v_teacher),
+    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000104', 81, 'A', 'Top of class in practicals.',       v_teacher),
+    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000105', 60, 'C', 'Needs to revise more dates.',       v_teacher),
+    (v_stu_1, v_assessment, '33333333-3333-3333-3333-000000000110', 88, 'A', 'Outstanding in coding tasks.',      v_teacher)
   on conflict (student_id, assessment_id, subject_id) do update set mark = excluded.mark, grade = excluded.grade, remarks = excluded.remarks;
 
   -- Marks for Rumbi (Form 2B)
   insert into public.rc_results (student_id, assessment_id, subject_id, mark, grade, remarks, entered_by) values
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000001', 84, 'A', 'Excellent.',                         v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000002', 76, 'B', 'Strong essays.',                     v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000003', 70, 'B', 'Polished delivery.',                 v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000004', 68, 'C', 'Focus more on the second paper.',    v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000005', 74, 'B', 'Improved analysis.',                 v_teacher),
-    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000006', 92, 'A', 'Distinction-level work.',            v_teacher)
+    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000101', 84, 'A', 'Excellent.',                         v_teacher),
+    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000102', 76, 'B', 'Strong essays.',                     v_teacher),
+    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000103', 70, 'B', 'Polished delivery.',                 v_teacher),
+    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000104', 68, 'C', 'Focus more on the second paper.',    v_teacher),
+    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000105', 74, 'B', 'Improved analysis.',                 v_teacher),
+    (v_stu_2, v_assessment, '33333333-3333-3333-3333-000000000110', 92, 'A', 'Distinction-level work.',            v_teacher)
   on conflict (student_id, assessment_id, subject_id) do update set mark = excluded.mark, grade = excluded.grade, remarks = excluded.remarks;
 end $$;
 
