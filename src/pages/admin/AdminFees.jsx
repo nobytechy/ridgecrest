@@ -34,18 +34,48 @@ export default function AdminFees() {
   const [creatingBulk, setCreatingBulk] = useState(null);
   const [busy, setBusy] = useState(false);
 
+  const [settings, setSettings] = useState({ sibling_discount_pct: 10, sibling_discount_third_pct: 15 });
+
   useEffect(() => { load(); }, []);
   async function load() {
-    const [i, t, s, c, f] = await Promise.all([
+    const [i, t, s, c, f, st] = await Promise.all([
       supabase.from('rc_invoices').select('*, student:rc_students(student_code, display_name, class:rc_classes(name)), term:rc_terms(name)').order('due_date', { ascending: false }),
       supabase.from('rc_terms').select('*').order('start_date', { ascending: false }),
       supabase.from('rc_students').select('id, student_code, display_name, current_class_id').eq('status', 'active'),
       supabase.from('rc_classes').select('id, name').order('position'),
       supabase.from('rc_fee_structures').select('*'),
+      supabase.from('rc_site_settings').select('sibling_discount_pct, sibling_discount_third_pct').limit(1).maybeSingle(),
     ]);
     setRows(i.data || []); setTerms(t.data || []);
     setStudents(s.data || []); setClasses(c.data || []);
     setFeeStructures(f.data || []);
+    if (st.data) setSettings({
+      sibling_discount_pct: Number(st.data.sibling_discount_pct ?? 10),
+      sibling_discount_third_pct: Number(st.data.sibling_discount_third_pct ?? 15),
+    });
+  }
+
+  // Count active siblings sharing a parent. Returns map studentId -> sibling count (incl. self).
+  async function loadSiblingCounts(studentIds) {
+    const { data: links } = await supabase.from('rc_student_parents').select('student_id, parent_id').in('student_id', studentIds);
+    const parentIdsByStu = new Map();
+    const parentsAll = new Set();
+    (links || []).forEach((l) => {
+      if (!parentIdsByStu.has(l.student_id)) parentIdsByStu.set(l.student_id, []);
+      parentIdsByStu.get(l.student_id).push(l.parent_id);
+      parentsAll.add(l.parent_id);
+    });
+    if (!parentsAll.size) return new Map(studentIds.map((id) => [id, 1]));
+    const { data: famLinks } = await supabase.from('rc_student_parents').select('student_id, parent_id').in('parent_id', Array.from(parentsAll));
+    const sibsByStu = new Map();
+    studentIds.forEach((sid) => {
+      const myParents = parentIdsByStu.get(sid) || [];
+      const family = new Set();
+      (famLinks || []).forEach((l) => { if (myParents.includes(l.parent_id)) family.add(l.student_id); });
+      family.add(sid);
+      sibsByStu.set(sid, family.size);
+    });
+    return sibsByStu;
   }
 
   const filtered = useMemo(() => {
@@ -101,21 +131,30 @@ export default function AdminFees() {
     const classStudents = students.filter((s) => s.current_class_id === creatingBulk.class_id);
     if (!classStudents.length) { setBusy(false); return toast.error('No students in that class.'); }
 
-    let generated = 0;
+    const sibsByStu = await loadSiblingCounts(classStudents.map((s) => s.id));
+    let generated = 0; let discounted = 0;
     for (const stu of classStudents) {
       const existing = rows.find((r) => r.student_id === stu.id && r.term_id === creatingBulk.term_id);
       if (existing) continue;
       const invoice_no = await nextCode('INV', 'rc_invoices', 'invoice_no');
+      const sibCount = sibsByStu.get(stu.id) || 1;
+      let pct = 0;
+      if (sibCount >= 3) pct = Number(settings.sibling_discount_third_pct || 0);
+      else if (sibCount === 2) pct = Number(settings.sibling_discount_pct || 0);
+      const total = Math.round((totalPerStudent * (1 - pct / 100)) * 100) / 100;
+      if (pct > 0) discounted++;
       await supabase.from('rc_invoices').insert({
         invoice_no, student_id: stu.id, term_id: creatingBulk.term_id,
-        total_usd: totalPerStudent, paid_usd: 0,
+        total_usd: total, paid_usd: 0,
         due_date: creatingBulk.due_date || null, status: 'open',
-        notes: `Auto-generated for ${creatingBulk.term_id} × class`,
+        notes: pct > 0
+          ? `Auto-generated · sibling discount ${pct}% (${sibCount} children)`
+          : `Auto-generated for term × class`,
       });
       generated++;
     }
     setBusy(false);
-    toast.success(`Generated ${generated} invoice${generated === 1 ? '' : 's'} of ${formatMoney({ amount: totalPerStudent, currency: 'USD' })} each`);
+    toast.success(`Generated ${generated} invoice${generated === 1 ? '' : 's'}${discounted ? ` · ${discounted} with sibling discount` : ''}`);
     setCreatingBulk(null);
     load();
   };

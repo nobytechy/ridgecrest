@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 import { useSettings } from '@/context/SettingsContext';
 import { formatMoney, formatDate, gradeOf } from '@/lib/format';
+import BirthdayWidget from '@/components/BirthdayWidget';
 
 export default function ParentDashboard() {
   const { parent } = useAuth();
@@ -118,6 +119,10 @@ export default function ParentDashboard() {
           </Link>
         ))}
       </div>
+
+      <section className="mt-6">
+        <BirthdayWidget scope="parent"/>
+      </section>
 
       {announcements.length > 0 && (
         <section className="mt-6 card">

@@ -29,6 +29,9 @@ import AdminMarks         from '@/pages/admin/AdminMarks';
 import AdminFees          from '@/pages/admin/AdminFees';
 import AdminAnnouncements from '@/pages/admin/AdminAnnouncements';
 import AdminSettings      from '@/pages/admin/AdminSettings';
+import AdminAttendance    from '@/pages/admin/AdminAttendance';
+import AdminTermReports   from '@/pages/admin/AdminTermReports';
+import AdminClassFeed     from '@/pages/admin/AdminClassFeed';
 
 import StudentLogin     from '@/pages/student/StudentLogin';
 import StudentDashboard from '@/pages/student/StudentDashboard';
@@ -46,6 +49,7 @@ import ParentChildEdit   from '@/pages/parent/ParentChildEdit';
 import ParentProfile     from '@/pages/parent/ParentProfile';
 
 import PrintReceipt from '@/pages/print/PrintReceipt';
+import PrintReport  from '@/pages/print/PrintReport';
 
 function RequireStaff({ children }) {
   const { isStaff, loading } = useAuth();
@@ -92,9 +96,12 @@ export default function App() {
             <Route path="subjects"      element={<AdminSubjects/>}/>
             <Route path="schemes"       element={<AdminSchemes/>}/>
             <Route path="timetable"     element={<AdminTimetable/>}/>
+            <Route path="attendance"    element={<AdminAttendance/>}/>
             <Route path="homework"      element={<AdminHomework/>}/>
             <Route path="gallery"       element={<AdminGallery/>}/>
             <Route path="marks"         element={<AdminMarks/>}/>
+            <Route path="term-reports"  element={<AdminTermReports/>}/>
+            <Route path="class-feed"    element={<AdminClassFeed/>}/>
             <Route path="fees"          element={<AdminFees/>}/>
             <Route path="announcements" element={<AdminAnnouncements/>}/>
             <Route path="settings"      element={<AdminSettings/>}/>
@@ -123,6 +130,7 @@ export default function App() {
 
           {/* Print pages */}
           <Route path="/print/receipt/:id" element={<PrintReceipt/>}/>
+          <Route path="/print/report/:studentId/:termId" element={<PrintReport/>}/>
 
           <Route path="*" element={<Navigate to="/" replace/>}/>
         </Routes>

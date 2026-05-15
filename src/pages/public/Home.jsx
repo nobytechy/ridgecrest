@@ -7,6 +7,17 @@ import {
 import { supabase } from '@/lib/supabase';
 import { useSettings } from '@/context/SettingsContext';
 import { formatDate } from '@/lib/format';
+import GradientBackdrop from '@/components/GradientBackdrop';
+import CountUp from '@/components/CountUp';
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } },
+};
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+};
 
 const HERO_IMAGES = [
   'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1920&auto=format&fit=crop&q=80',
@@ -77,40 +88,57 @@ export default function Home() {
       </section>
 
       {/* Trust stats */}
-      <section className="border-b border-rc-100 bg-white py-6">
-        <div className="container-page">
-          <div className="grid grid-cols-2 items-center gap-6 md:grid-cols-4">
+      <section className="relative overflow-hidden border-b border-rc-100 bg-white py-10">
+        <GradientBackdrop/>
+        <div className="container-page relative z-10">
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}
+            variants={stagger}
+            className="grid grid-cols-2 items-center gap-6 md:grid-cols-4">
             {[
-              { v: '40+',     l: 'Years of excellence' },
-              { v: '600+',    l: 'Learners enrolled' },
-              { v: '50+',     l: 'Qualified educators' },
-              { v: 'Cambridge', l: '& ZIMSEC examinations' },
+              { type: 'num',   v: 40,  suffix: '+',        l: 'Years of excellence' },
+              { type: 'num',   v: 600, suffix: '+',        l: 'Learners enrolled' },
+              { type: 'num',   v: 50,  suffix: '+',        l: 'Qualified educators' },
+              { type: 'text',  v: 'Cambridge',             l: '& ZIMSEC examinations' },
             ].map((s) => (
-              <div key={s.l} className="text-center md:text-left">
-                <p className="font-display text-2xl font-bold tracking-tight text-rc-900 md:text-3xl">{s.v}</p>
+              <motion.div key={s.l} variants={fadeUp} className="text-center md:text-left">
+                <p className="font-display text-2xl font-bold tracking-tight text-rc-900 md:text-3xl">
+                  {s.type === 'num' ? <CountUp to={s.v} suffix={s.suffix}/> : s.v}
+                </p>
                 <p className="mt-0.5 text-[11px] uppercase tracking-wider text-rc-500">{s.l}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* Values */}
-      <section className="container-page py-16 md:py-20">
-        <div className="mb-10 max-w-2xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rc-700">What sets us apart</p>
-          <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-rc-900 md:text-4xl">
-            More than a school. A learning home.
-          </h2>
-        </div>
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-          {VALUES.map(({ icon: Icon, title, body }) => (
-            <div key={title} className="rounded-2xl border border-rc-200 bg-white p-6 shadow-sm">
-              <div className="mb-4 grid h-11 w-11 place-items-center rounded-lg bg-rc-100 text-rc-900"><Icon size={20}/></div>
-              <h3 className="font-display text-lg font-bold text-rc-900">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-rc-600">{body}</p>
-            </div>
-          ))}
+      <section className="relative overflow-hidden py-16 md:py-20">
+        <GradientBackdrop/>
+        <div className="container-page relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-60px' }} transition={{ duration: 0.6 }}
+            className="mb-10 max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rc-700">What sets us apart</p>
+            <h2 className="mt-2 font-display text-3xl font-bold tracking-tight text-rc-900 md:text-4xl">
+              More than a school. A learning home.
+            </h2>
+          </motion.div>
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true, margin: '-60px' }}
+            variants={stagger}
+            className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            {VALUES.map(({ icon: Icon, title, body }) => (
+              <motion.div key={title} variants={fadeUp}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="rounded-2xl border border-rc-200 bg-white p-6 shadow-sm transition hover:shadow-md">
+                <div className="mb-4 grid h-11 w-11 place-items-center rounded-lg bg-rc-100 text-rc-900"><Icon size={20}/></div>
+                <h3 className="font-display text-lg font-bold text-rc-900">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-rc-600">{body}</p>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
       </section>
 
@@ -168,7 +196,10 @@ export default function Home() {
 
       {/* CTA */}
       <section className="container-page py-16 md:py-20">
-        <div className="rounded-3xl border border-rc-200 bg-gradient-to-br from-rc-900 to-rc-950 p-10 text-white md:p-14">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.7 }}
+          className="rounded-3xl border border-rc-200 bg-gradient-to-br from-rc-900 to-rc-950 p-10 text-white md:p-14">
           <div className="grid items-center gap-6 md:grid-cols-[1.4fr_1fr]">
             <div>
               <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
@@ -187,7 +218,7 @@ export default function Home() {
               </Link>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
     </div>
   );

@@ -2,8 +2,9 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users2, GraduationCap, Users, BookOpen, ClipboardList,
   Receipt, Megaphone, Settings, LogOut, Menu, X, Globe, School,
-  NotebookPen, CalendarDays, Image as ImageIcon,
+  NotebookPen, CalendarDays, Image as ImageIcon, CheckSquare, FileText, MessageCircle,
 } from 'lucide-react';
+import UniversalSearch from '@/components/UniversalSearch';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -19,8 +20,11 @@ const NAV = [
   { to: '/admin/subjects',     icon: BookOpen,        label: 'Subjects' },
   { to: '/admin/schemes',      icon: NotebookPen,     label: 'Scheme books' },
   { to: '/admin/timetable',    icon: CalendarDays,    label: 'Timetable' },
+  { to: '/admin/attendance',   icon: CheckSquare,     label: 'Attendance' },
   { to: '/admin/homework',     icon: NotebookPen,     label: 'Homework' },
   { to: '/admin/marks',        icon: ClipboardList,   label: 'Marks' },
+  { to: '/admin/term-reports', icon: FileText,        label: 'Term reports' },
+  { to: '/admin/class-feed',   icon: MessageCircle,   label: 'Class feed' },
   { to: '/admin/fees',         icon: Receipt,         label: 'Fees & Payments' },
   { to: '/admin/gallery',      icon: ImageIcon,       label: 'Gallery' },
   { to: '/admin/announcements',icon: Megaphone,       label: 'Announcements' },
@@ -77,10 +81,10 @@ export default function AdminLayout() {
       </aside>
 
       <div className="flex min-h-screen flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-rc-200 bg-white px-4 py-3 md:hidden">
-          <button onClick={() => setOpen((v) => !v)} className="rounded-md p-2 text-rc-600 hover:bg-rc-100">{open ? <X size={18}/> : <Menu size={18}/>}</button>
+        <header className="sticky top-0 z-30 flex items-center justify-between border-b border-rc-200 bg-white px-4 py-3">
+          <button onClick={() => setOpen((v) => !v)} className="rounded-md p-2 text-rc-600 hover:bg-rc-100 md:hidden">{open ? <X size={18}/> : <Menu size={18}/>}</button>
           <Logo size={28} withText={false}/>
-          <div className="w-9"/>
+          <UniversalSearch/>
         </header>
         <main className="flex-1 overflow-x-auto p-4 md:p-8">
           <Outlet/>

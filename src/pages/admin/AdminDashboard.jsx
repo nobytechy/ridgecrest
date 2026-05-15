@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase';
 import { useSettings } from '@/context/SettingsContext';
 import { formatMoney, formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import BirthdayWidget from '@/components/BirthdayWidget';
 
 export default function AdminDashboard() {
   const { currentTerm, settings } = useSettings();
@@ -115,6 +116,20 @@ export default function AdminDashboard() {
             </table>
           </div>
         )}
+      </section>
+
+      <section className="mt-6 grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-1"><BirthdayWidget scope="all"/></div>
+        <div className="lg:col-span-2 card">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="grid h-9 w-9 place-items-center rounded-lg bg-rc-100 text-rc-700"><BookOpen size={18}/></div>
+            <div>
+              <p className="font-display text-base font-bold text-rc-900">Tip of the day</p>
+              <p className="text-[10px] text-rc-500">Keyboard shortcut</p>
+            </div>
+          </div>
+          <p className="text-sm leading-relaxed text-rc-700">Press <kbd className="rounded bg-rc-100 px-1.5 py-0.5 font-mono text-[11px]">⌘</kbd> + <kbd className="rounded bg-rc-100 px-1.5 py-0.5 font-mono text-[11px]">K</kbd> anywhere in the staff portal to jump straight to a student, parent, staff member, or class.</p>
+        </div>
       </section>
 
       <section className="mt-6 grid gap-4 md:grid-cols-3">
