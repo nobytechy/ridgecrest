@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Resetting Ridgecrest…</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui, sans-serif; background: #FAFAFA; color: #18181B;
+             display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 1rem; }
+      .card { max-width: 28rem; text-align: center; background: white; padding: 2rem;
+              border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,.08); border: 1px solid #E4E4E7; }
+      h1 { font-family: 'Crimson Text', Georgia, serif; margin: 0 0 .5rem; color: #27272A; }
+      p { color: #52525B; font-size: .9rem; }
+      .status { font-family: ui-monospace, monospace; font-size: .75rem; color: #71717A; margin: 1rem 0; }
+      a { display: inline-block; margin-top: 1rem; padding: .65rem 1.25rem; background: #27272A;
+          color: white; text-decoration: none; border-radius: .5rem; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Clearing app cache…</h1>
+      <p>Unregistering service workers and wiping cached data.</p>
+      <div id="status" class="status">Working…</div>
+      <a href="/" id="go" style="display:none">Open Ridgecrest →</a>
+    </div>
+    <script>
+      (async function () {
+        const log = (m) => { document.getElementById('status').textContent = m; };
+        try {
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const r of regs) await r.unregister();
+          }
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map((k) => caches.delete(k)));
+          }
+          try { localStorage.clear(); } catch (_) {}
+          try { sessionStorage.clear(); } catch (_) {}
+          log('Done — caches cleared.');
+          setTimeout(() => location.replace('/'), 600);
+        } catch (err) {
+          log('Reset error: ' + (err && err.message ? err.message : err));
+          document.getElementById('go').style.display = 'inline-block';
+        }
+      })();
+    </script>
+  </body>
+</html>

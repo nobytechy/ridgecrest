@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] },
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "preserve",
+    "checkJs": false,
+    "target": "ES2022",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src"]
+}
