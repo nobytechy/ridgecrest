@@ -1057,19 +1057,19 @@ begin
   insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
   values (v_sid, 'STU-2026-001', 'Tafara Mukamuri', 'Taf', '2017-04-22', 'M', v_class_g3, 2025, '2200', false, 'active')
   on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_g3, pin = '2200', status = 'active', force_pin_reset = false;
-  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict (student_id, parent_id) do update set is_primary = true;
 
   v_sid := public._rc_seed_user('stu-2026-002@rc.local', '2201', 'Rumbidzai Mukamuri');
   insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
   values (v_sid, 'STU-2026-002', 'Rumbidzai Mukamuri', 'Rumbi', '2015-08-11', 'F', v_class_g5, 2023, '2201', false, 'active')
   on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_g5, pin = '2201', status = 'active', force_pin_reset = false;
-  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict (student_id, parent_id) do update set is_primary = true;
 
   v_sid := public._rc_seed_user('stu-2026-005@rc.local', '5500', 'Ratidzai Mukamuri');
   insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
   values (v_sid, 'STU-2026-005', 'Ratidzai Mukamuri', 'Rati', '2021-03-19', 'F', v_class_ecdb, 2026, '5500', false, 'active')
   on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_ecdb, pin = '5500', status = 'active', force_pin_reset = false;
-  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict (student_id, parent_id) do update set is_primary = true;
 
   -- Tebulo family (Manisha — single child)
   v_pid := public._rc_seed_user('par-2026-002@rc.local', '4455', 'Mrs. M. Tebulo');
@@ -1081,7 +1081,7 @@ begin
   insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
   values (v_sid, 'STU-2026-003', 'Manisha Tebulo', 'Manny', '2017-07-15', 'F', v_class_g3, 2025, '3300', false, 'active')
   on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_g3, pin = '3300', status = 'active', force_pin_reset = false;
-  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict (student_id, parent_id) do update set is_primary = true;
 
   -- Chiweshe family (Daniel — single child)
   v_pid := public._rc_seed_user('par-2026-003@rc.local', '5566', 'Mrs. P. Chiweshe');
@@ -1093,7 +1093,7 @@ begin
   insert into public.rc_students (id, student_code, display_name, preferred_name, dob, gender, current_class_id, admission_year, pin, force_pin_reset, status)
   values (v_sid, 'STU-2026-004', 'Daniel Chiweshe', 'Dan', '2016-11-02', 'M', v_class_g4, 2024, '4400', false, 'active')
   on conflict (student_code) do update set id = excluded.id, current_class_id = v_class_g4, pin = '4400', status = 'active', force_pin_reset = false;
-  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict do update set is_primary = true;
+  insert into public.rc_student_parents (student_id, parent_id, is_primary) values (v_sid, v_pid, true) on conflict (student_id, parent_id) do update set is_primary = true;
 end $$;
 
 -- Mid-term test + marks (Grade 3 + Grade 4 + Grade 5)
