@@ -10,6 +10,7 @@ import { formatDate } from '@/lib/format';
 import GradientBackdrop from '@/components/GradientBackdrop';
 import CountUp from '@/components/CountUp';
 import ReelEmbed from '@/components/ReelEmbed';
+import TwitterFeed from '@/components/TwitterFeed';
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -20,11 +21,12 @@ const stagger = {
   show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
 };
 
-/* African primary-school imagery — Unsplash IDs chosen for cultural fit.
-   Swap any that don't suit by replacing the photo ID portion of the URL. */
+/* Zimbabwean schoolchildren imagery, sourced from Wikimedia Commons and
+   self-hosted at /public/photos. Replace with the school's own photos
+   when available (same filenames; that's all). */
 const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=1920&auto=format&fit=crop&q=80',
-  'https://images.unsplash.com/photo-1497019820-8ed5da14b3eb?w=1920&auto=format&fit=crop&q=80',
+  '/photos/zw-school-yard.jpg',
+  '/photos/zw-marimbas.jpg',
 ];
 
 const VALUES = [
@@ -227,6 +229,9 @@ export default function Home() {
         tone="light"
         reverse
       />
+
+      {/* Live ministry feeds */}
+      <TwitterFeed/>
 
       {/* CTA */}
       <section className="container-page py-16 md:py-20">

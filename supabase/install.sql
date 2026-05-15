@@ -45,7 +45,7 @@ begin new.updated_at := now(); return new; end $$;
 -- ─── Site settings ──────────────────────────────────────────────────────
 create table if not exists public.rc_site_settings (
   id              int primary key default 1 check (id = 1),
-  school_name     text not null default 'Ridgecrest School',
+  school_name     text not null default 'Ridgecrest Junior School',
   motto           text default 'Quality education · ECD A to Grade 7',
   tagline         text default 'Quality education from ECD A & B to Grade 7, supported by a state-of-the-art computer lab and safe, reliable transport.',
   primary_phone   text default '+263 77 389 2866',
@@ -866,7 +866,7 @@ on conflict (id) do nothing;
 
 -- Always sync the public-facing school details (re-runnable refresh).
 update public.rc_site_settings
-   set school_name    = 'Ridgecrest School',
+   set school_name    = 'Ridgecrest Junior School',
        motto          = 'Quality education · ECD A to Grade 7',
        tagline        = 'Quality education from ECD A & B to Grade 7, supported by a state-of-the-art computer lab and safe, reliable transport.',
        primary_phone  = '+263 77 389 2866',
@@ -1309,7 +1309,7 @@ begin
      current_timestamp - interval '1 day'),
     (v_class, v_author,
      'What a great morning! Today we did our timetable drill and Manisha got every single 7-times-table answer right. Tafara was off school today (we hope he feels better soon).',
-     'https://images.unsplash.com/photo-1497019820-8ed5da14b3eb?w=1200&auto=format&fit=crop&q=80',
+     '/photos/zw-water.jpg',
      false,
      current_timestamp - interval '6 hours'),
     (v_class, v_author,
@@ -1328,25 +1328,25 @@ begin
     v_album1 := gen_random_uuid();
     insert into public.rc_gallery_albums (id, title, description, cover_url, event_date, position)
     values (v_album1, 'Heritage Trip — Kumusha Crescent', 'Ridgecrest Junior on a heritage visit — our heritage, our pride.',
-            'https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=1200&auto=format&fit=crop&q=80',
+            '/photos/zw-marimbas.jpg',
             '2026-06-15', 10);
     insert into public.rc_gallery_photos (album_id, url, caption, position) values
-      (v_album1, 'https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=1600&auto=format&fit=crop&q=80', 'Arriving at Kumusha',         10),
-      (v_album1, 'https://images.unsplash.com/photo-1497019820-8ed5da14b3eb?w=1600&auto=format&fit=crop&q=80', 'Listening to elders',         20),
-      (v_album1, 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=1600&auto=format&fit=crop&q=80', 'Traditional storytelling',   30);
+      (v_album1, '/photos/zw-marimbas.jpg',    'Marimba performance',     10),
+      (v_album1, '/photos/zw-school-yard.jpg', 'Working together',        20),
+      (v_album1, '/photos/zw-chisungu.jpg',    'Class portrait',          30);
   end if;
 
-  select id into v_album2 from public.rc_gallery_albums where title = 'Computer Lab';
+  select id into v_album2 from public.rc_gallery_albums where title = 'A day on campus';
   if v_album2 is null then
     v_album2 := gen_random_uuid();
     insert into public.rc_gallery_albums (id, title, description, cover_url, event_date, position)
-    values (v_album2, 'Computer Lab', 'Our state-of-the-art computer lab — hands-on digital learning from the earliest grades.',
-            'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1200&auto=format&fit=crop&q=80',
+    values (v_album2, 'A day on campus', 'From the morning bell to the afternoon clubs — life at Ridgecrest Junior.',
+            '/photos/zw-classroom.jpg',
             '2026-05-20', 20);
     insert into public.rc_gallery_photos (album_id, url, caption, position) values
-      (v_album2, 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=1600&auto=format&fit=crop&q=80', 'New machines in place', 10),
-      (v_album2, 'https://images.unsplash.com/photo-1503676593-cebf3ae6c75b?w=1600&auto=format&fit=crop&q=80', 'Grade 5 ICT class',     20),
-      (v_album2, 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=1600&auto=format&fit=crop&q=80', 'Typing club',           30);
+      (v_album2, '/photos/zw-classroom.jpg', 'In the classroom',  10),
+      (v_album2, '/photos/zw-water.jpg',     'Break time',        20),
+      (v_album2, '/photos/zw-pe-boy.jpg',    'PE & sport',        30);
   end if;
 end $$;
 

@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 export default function Logo({ size = 40, withText = true, className = '' }) {
   const { settings } = useSettings();
   const custom = settings?.logo_url || '/logo.png';
-  const name = settings?.school_name || 'Ridgecrest';
+  const name = settings?.school_name || 'Ridgecrest Junior School';
   const motto = settings?.motto || 'Quality education · ECD A to Grade 7';
 
   return (

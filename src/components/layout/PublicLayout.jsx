@@ -127,7 +127,7 @@ export default function PublicLayout() {
       <footer className="relative overflow-hidden border-t border-rc-800 bg-rc-950 text-rc-100">
         {/* Background photo with strong dark overlay so text stays readable */}
         <img
-          src="https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=1920&auto=format&fit=crop&q=80"
+          src="/photos/zw-marimbas.jpg"
           alt="" aria-hidden="true"
           className="absolute inset-0 h-full w-full object-cover opacity-25"
         />
