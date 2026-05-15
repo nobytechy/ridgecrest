@@ -124,46 +124,60 @@ export default function PublicLayout() {
       <main><Outlet/></main>
       <FloatingInquiry/>
 
-      <footer className="border-t border-rc-200 bg-rc-50">
-        <div className="container-page grid gap-8 py-12 md:grid-cols-4">
+      <footer className="relative overflow-hidden border-t border-rc-800 bg-rc-950 text-rc-100">
+        {/* Background photo with strong dark overlay so text stays readable */}
+        <img
+          src="https://images.unsplash.com/photo-1542810634-71277d95dcbb?w=1920&auto=format&fit=crop&q=80"
+          alt="" aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover opacity-25"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-rc-950/95 via-rc-900/92 to-rc-700/75"/>
+        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-sun-500/10 blur-3xl"/>
+        <div className="absolute -right-32 -bottom-32 h-96 w-96 rounded-full bg-coral-500/10 blur-3xl"/>
+
+        <div className="container-page relative z-10 grid gap-8 py-14 md:grid-cols-4">
           <div className="md:col-span-2">
-            <Logo size={40}/>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-rc-600">
+            <Logo size={44}/>
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-rc-100/85">
               {settings?.tagline || 'A learning home for tomorrow\'s leaders.'}
             </p>
-            <p className="mt-3 text-xs text-rc-500">Founded {settings?.founded_year || '1982'}.</p>
+            <div className="mt-5 space-y-1.5 text-xs text-rc-200/80">
+              <p><MapPin size={12} className="-mt-0.5 mr-1.5 inline"/> {settings?.address_line || '235 Chiremba Road, Hatfield, Harare'}</p>
+              <p><Phone size={12} className="-mt-0.5 mr-1.5 inline"/> {settings?.primary_phone || '+263 77 389 2866'}</p>
+              <p><Mail  size={12} className="-mt-0.5 mr-1.5 inline"/> {settings?.email || 'enquiries@ridgecrest.co.zw'}</p>
+            </div>
           </div>
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-rc-500">School</p>
-            <ul className="space-y-2 text-sm text-rc-600">
-              <li><Link to="/about"      className="hover:text-rc-900">About us</Link></li>
-              <li><Link to="/academics"  className="hover:text-rc-900">Academics</Link></li>
-              <li><Link to="/admissions" className="hover:text-rc-900">Admissions</Link></li>
-              <li><Link to="/contact"    className="hover:text-rc-900">Contact</Link></li>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-sun-300">School</p>
+            <ul className="space-y-2 text-sm text-rc-100/80">
+              <li><Link to="/about"      className="transition hover:text-white">About us</Link></li>
+              <li><Link to="/academics"  className="transition hover:text-white">Academics</Link></li>
+              <li><Link to="/admissions" className="transition hover:text-white">Admissions</Link></li>
+              <li><Link to="/contact"    className="transition hover:text-white">Contact</Link></li>
             </ul>
           </div>
           <div>
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-rc-500">Portals</p>
-            <ul className="space-y-2 text-sm text-rc-600">
-              <li><Link to="/student/login" className="hover:text-rc-900">Student</Link></li>
-              <li><Link to="/parent/login"  className="hover:text-rc-900">Parent</Link></li>
-              <li><Link to="/admin/login"   className="hover:text-rc-900">Staff / Admin</Link></li>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-sun-300">Portals</p>
+            <ul className="space-y-2 text-sm text-rc-100/80">
+              <li><Link to="/student/login" className="transition hover:text-white">Student</Link></li>
+              <li><Link to="/parent/login"  className="transition hover:text-white">Parent</Link></li>
+              <li><Link to="/admin/login"   className="transition hover:text-white">Staff / Admin</Link></li>
             </ul>
             {settings?.facebook_url && (
               <a href={settings.facebook_url} target="_blank" rel="noopener noreferrer"
-                 className="mt-4 inline-flex items-center gap-2 rounded-lg border border-rc-200 bg-white px-3 py-2 text-xs font-medium text-rc-700 transition hover:border-rc-400 hover:text-rc-900">
+                 className="mt-4 inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-xs font-medium text-white backdrop-blur transition hover:border-white/40 hover:bg-white/10">
                 <Facebook size={14}/> Follow on Facebook
               </a>
             )}
           </div>
         </div>
-        <div className="border-t border-rc-200 py-5 text-center text-xs text-rc-500">
+        <div className="relative z-10 border-t border-white/10 py-5 text-center text-xs text-rc-200/70">
           <p>© {new Date().getFullYear()} {settings?.school_name || 'Ridgecrest'}. All rights reserved.</p>
-          <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-rc-400">
+          <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] text-rc-300/70">
             Powered by{' '}
             <a href="https://wa.me/263774603865?text=Hi%20Noby%20%E2%80%94%20I%20saw%20your%20work%20and%20wanted%20to%20chat"
                target="_blank" rel="noopener noreferrer"
-               className="inline-flex items-center gap-1 font-semibold text-rc-700 hover:text-rc-900 hover:underline">
+               className="inline-flex items-center gap-1 font-semibold text-sun-300 hover:text-sun-200 hover:underline">
               <MessageCircle size={11}/> Noby
             </a>
           </p>
