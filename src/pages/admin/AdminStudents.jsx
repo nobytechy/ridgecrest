@@ -25,6 +25,8 @@ export default function AdminStudents() {
   const [classes, setClasses] = useState([]);
   const [q, setQ] = useState('');
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [creating, setCreating] = useState(null);
   const [editing, setEditing] = useState(null);
   const [resetting, setResetting] = useState(null);
@@ -32,12 +34,21 @@ export default function AdminStudents() {
   useEffect(() => { load(); }, []);
 
   async function load() {
-    const [s, c] = await Promise.all([
-      supabase.from('rc_students').select('*, class:rc_classes(name)').order('display_name'),
-      supabase.from('rc_classes').select('id, name, level').order('position'),
-    ]);
-    setRows(s.data || []);
-    setClasses(c.data || []);
+    setLoading(true); setLoadError(null);
+    try {
+      const [s, c] = await Promise.all([
+        supabase.from('rc_students').select('*, class:rc_classes(name)').order('display_name'),
+        supabase.from('rc_classes').select('id, name, level').order('position'),
+      ]);
+      if (s.error) throw s.error;
+      if (c.error) throw c.error;
+      setRows(s.data || []);
+      setClasses(c.data || []);
+    } catch (e) {
+      setLoadError(e.message || 'Failed to load students');
+    } finally {
+      setLoading(false);
+    }
   }
 
   const filtered = useMemo(() => {
@@ -146,7 +157,16 @@ export default function AdminStudents() {
               </tr>
             </thead>
             <tbody>
-              {filtered.length === 0 ? (
+              {loading ? (
+                <tr><td colSpan={7} className="py-10 text-center text-sm text-rc-500">
+                  <Loader2 className="mx-auto mb-2 animate-spin text-rc-400" size={20}/>Loading students…
+                </td></tr>
+              ) : loadError ? (
+                <tr><td colSpan={7} className="py-10 text-center text-sm text-rose-700">
+                  Could not load students: {loadError}
+                  <button onClick={load} className="ml-2 underline">Retry</button>
+                </td></tr>
+              ) : filtered.length === 0 ? (
                 <tr><td colSpan={7} className="py-10 text-center text-sm text-rc-500">
                   <GraduationCap className="mx-auto mb-2 text-rc-400" size={24}/>No students yet.
                 </td></tr>

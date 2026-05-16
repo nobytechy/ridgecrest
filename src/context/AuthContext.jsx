@@ -41,30 +41,45 @@ export function AuthProvider({ children }) {
 
   const loadIdentity = useCallback(async (userId) => {
     if (!userId) return { staff: null, student: null, parent: null, role: null };
-    const [{ data: s }, { data: st }, { data: p }] = await Promise.all([
-      supabase.from('rc_staff').select('*, role:rc_roles(*)').eq('id', userId).maybeSingle(),
-      supabase.from('rc_students').select('*, class:rc_classes(*)').eq('id', userId).maybeSingle(),
-      supabase.from('rc_parents').select('*').eq('id', userId).maybeSingle(),
-    ]);
-    return { staff: s || null, student: st || null, parent: p || null, role: s?.role || null };
+    try {
+      const result = await withTimeout(Promise.all([
+        supabase.from('rc_staff').select('*, role:rc_roles(*)').eq('id', userId).maybeSingle(),
+        supabase.from('rc_students').select('*, class:rc_classes(*)').eq('id', userId).maybeSingle(),
+        supabase.from('rc_parents').select('*').eq('id', userId).maybeSingle(),
+      ]));
+      const [{ data: s }, { data: st }, { data: p }] = result;
+      return { staff: s || null, student: st || null, parent: p || null, role: s?.role || null };
+    } catch (err) {
+      console.warn('loadIdentity failed:', err.message);
+      return { staff: null, student: null, parent: null, role: null };
+    }
   }, []);
 
   useEffect(() => {
     let active = true;
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!active) return;
-      setSession(data.session);
-      if (data.session?.user) {
-        const ids = await loadIdentity(data.session.user.id);
-        setStaff(ids.staff); setStudent(ids.student); setParent(ids.parent); setRole(ids.role);
+    (async () => {
+      try {
+        const { data } = await withTimeout(supabase.auth.getSession());
+        if (!active) return;
+        setSession(data.session);
+        if (data.session?.user) {
+          const ids = await loadIdentity(data.session.user.id);
+          if (!active) return;
+          setStaff(ids.staff); setStudent(ids.student); setParent(ids.parent); setRole(ids.role);
+        }
+      } catch (err) {
+        console.warn('Initial session restore failed — clearing stale session:', err.message);
+        try { await supabase.auth.signOut({ scope: 'local' }); } catch (_) {}
+      } finally {
+        if (active) setLoading(false);
       }
-      setLoading(false);
-    });
+    })();
     const { data: sub } = supabase.auth.onAuthStateChange(async (_evt, s) => {
       if (!active) return;
       setSession(s);
       if (s?.user) {
         const ids = await loadIdentity(s.user.id);
+        if (!active) return;
         setStaff(ids.staff); setStudent(ids.student); setParent(ids.parent); setRole(ids.role);
       } else {
         setStaff(null); setStudent(null); setParent(null); setRole(null);

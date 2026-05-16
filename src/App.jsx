@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { SettingsProvider } from '@/context/SettingsContext';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 
@@ -51,21 +52,48 @@ import ParentProfile     from '@/pages/parent/ParentProfile';
 import PrintReceipt from '@/pages/print/PrintReceipt';
 import PrintReport  from '@/pages/print/PrintReport';
 
+/* If the session restore takes longer than ~6s, show an escape hatch — the
+   user is most likely on a stale cached PWA or a bad network. Don't trap them. */
+function LoadingGate({ target }) {
+  const [showEscape, setShowEscape] = useState(false);
+  useEffect(() => {
+    const id = setTimeout(() => setShowEscape(true), 6000);
+    return () => clearTimeout(id);
+  }, []);
+  return (
+    <div className="grid min-h-screen place-items-center bg-rc-50 p-6 text-center">
+      <div>
+        <div className="mx-auto mb-3 h-8 w-8 animate-spin rounded-full border-2 border-rc-300 border-t-rc-700"/>
+        <p className="text-sm text-rc-600">Loading your session…</p>
+        {showEscape && (
+          <div className="mt-6 max-w-sm text-xs text-rc-500">
+            <p>Taking longer than expected.</p>
+            <div className="mt-3 flex justify-center gap-3">
+              <a href={target} className="rounded-md border border-rc-300 bg-white px-3 py-1.5 font-semibold text-rc-800 hover:bg-rc-100">Sign in again</a>
+              <a href="/reset.html" className="rounded-md border border-rc-300 bg-white px-3 py-1.5 font-semibold text-rc-800 hover:bg-rc-100">Clear app cache</a>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function RequireStaff({ children }) {
   const { isStaff, loading } = useAuth();
-  if (loading)  return <div className="grid min-h-screen place-items-center text-rc-500">Loading…</div>;
+  if (loading)  return <LoadingGate target="/admin/login"/>;
   if (!isStaff) return <Navigate to="/admin/login" replace/>;
   return children;
 }
 function RequireStudent({ children }) {
   const { isStudent, loading } = useAuth();
-  if (loading)    return <div className="grid min-h-screen place-items-center text-rc-500">Loading…</div>;
+  if (loading)    return <LoadingGate target="/student/login"/>;
   if (!isStudent) return <Navigate to="/student/login" replace/>;
   return children;
 }
 function RequireParent({ children }) {
   const { isParent, loading } = useAuth();
-  if (loading)   return <div className="grid min-h-screen place-items-center text-rc-500">Loading…</div>;
+  if (loading)   return <LoadingGate target="/parent/login"/>;
   if (!isParent) return <Navigate to="/parent/login" replace/>;
   return children;
 }
