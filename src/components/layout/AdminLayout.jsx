@@ -3,6 +3,7 @@ import {
   LayoutDashboard, Users2, GraduationCap, Users, BookOpen, ClipboardList,
   Receipt, Megaphone, Settings, LogOut, Menu, X, Globe, School,
   NotebookPen, CalendarDays, Image as ImageIcon, CheckSquare, FileText, MessageCircle,
+  ShieldCheck,
 } from 'lucide-react';
 import UniversalSearch from '@/components/UniversalSearch';
 import { useState } from 'react';
@@ -10,25 +11,27 @@ import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
+import { canSee } from '@/lib/permissions';
 
 const NAV = [
-  { to: '/admin',              icon: LayoutDashboard, label: 'Overview',     end: true },
-  { to: '/admin/students',     icon: GraduationCap,   label: 'Students' },
-  { to: '/admin/parents',      icon: Users,           label: 'Parents' },
-  { to: '/admin/staff',        icon: Users2,          label: 'Staff' },
-  { to: '/admin/classes',      icon: School,          label: 'Classes' },
-  { to: '/admin/subjects',     icon: BookOpen,        label: 'Subjects' },
-  { to: '/admin/schemes',      icon: NotebookPen,     label: 'Scheme books' },
-  { to: '/admin/timetable',    icon: CalendarDays,    label: 'Timetable' },
-  { to: '/admin/attendance',   icon: CheckSquare,     label: 'Attendance' },
-  { to: '/admin/homework',     icon: NotebookPen,     label: 'Homework' },
-  { to: '/admin/marks',        icon: ClipboardList,   label: 'Marks' },
-  { to: '/admin/term-reports', icon: FileText,        label: 'Term reports' },
-  { to: '/admin/class-feed',   icon: MessageCircle,   label: 'Class feed' },
-  { to: '/admin/fees',         icon: Receipt,         label: 'Fees & Payments' },
-  { to: '/admin/gallery',      icon: ImageIcon,       label: 'Gallery' },
-  { to: '/admin/announcements',icon: Megaphone,       label: 'Announcements' },
-  { to: '/admin/settings',     icon: Settings,        label: 'Settings' },
+  { to: '/admin',              icon: LayoutDashboard, label: 'Overview',         perm: null,            end: true },
+  { to: '/admin/students',     icon: GraduationCap,   label: 'Students',         perm: 'students' },
+  { to: '/admin/parents',      icon: Users,           label: 'Parents',          perm: 'students' },
+  { to: '/admin/staff',        icon: Users2,          label: 'Staff',            perm: 'staff' },
+  { to: '/admin/classes',      icon: School,          label: 'Classes',          perm: 'classes' },
+  { to: '/admin/subjects',     icon: BookOpen,        label: 'Subjects',         perm: 'classes' },
+  { to: '/admin/schemes',      icon: NotebookPen,     label: 'Scheme books',     perm: 'marks' },
+  { to: '/admin/timetable',    icon: CalendarDays,    label: 'Timetable',        perm: 'classes' },
+  { to: '/admin/attendance',   icon: CheckSquare,     label: 'Attendance',       perm: 'attendance' },
+  { to: '/admin/homework',     icon: NotebookPen,     label: 'Homework',         perm: 'marks' },
+  { to: '/admin/marks',        icon: ClipboardList,   label: 'Marks',            perm: 'marks' },
+  { to: '/admin/term-reports', icon: FileText,        label: 'Term reports',     perm: 'marks' },
+  { to: '/admin/class-feed',   icon: MessageCircle,   label: 'Class feed',       perm: 'marks' },
+  { to: '/admin/fees',         icon: Receipt,         label: 'Fees & Payments',  perm: 'fees' },
+  { to: '/admin/gallery',      icon: ImageIcon,       label: 'Gallery',          perm: 'announcements' },
+  { to: '/admin/announcements',icon: Megaphone,       label: 'Announcements',    perm: 'announcements' },
+  { to: '/admin/roles',        icon: ShieldCheck,     label: 'Roles & access',   perm: 'roles' },
+  { to: '/admin/settings',     icon: Settings,        label: 'Settings',         perm: 'settings' },
 ];
 
 export default function AdminLayout() {
@@ -54,7 +57,7 @@ export default function AdminLayout() {
             <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-rc-700">Staff Portal</p>
           </div>
           <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-            {NAV.map(({ to, icon: Icon, label, end }) => (
+            {NAV.filter(({ perm }) => !perm || canSee(role, perm)).map(({ to, icon: Icon, label, end }) => (
               <NavLink key={to} to={to} end={end} onClick={() => setOpen(false)}
                 className={({ isActive }) => cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',

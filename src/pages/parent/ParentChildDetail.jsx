@@ -14,37 +14,57 @@ const STATUS_TONE = {
   void: 'bg-slate-200 text-slate-500',
 };
 
+// UUID guard — protects against /parent/children/undefined and similar bad routes.
+const UUID_RX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function ParentChildDetail() {
   const { id } = useParams();
   const { parent } = useAuth();
   const { settings } = useSettings();
   const [child, setChild] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
   const [marksByAssessment, setMarksByAssessment] = useState({});
   const [invoices, setInvoices] = useState([]);
   const [payments, setPayments] = useState([]);
   const [homework, setHomework] = useState([]);
   const [showPay, setShowPay] = useState(false);
 
-  useEffect(() => {
-    if (!parent?.id) return;
-    supabase.from('rc_students').select('*, class:rc_classes(name)').eq('id', id).maybeSingle()
-      .then(({ data }) => setChild(data));
+  const validId = id && id !== 'undefined' && UUID_RX.test(id);
 
-    supabase.from('rc_results').select('*, subject:rc_subjects(name, code), assessment:rc_assessments(name, scheduled_for, is_published, term:rc_terms(name))').eq('student_id', id)
-      .then(({ data }) => {
+  useEffect(() => {
+    if (!parent?.id || !validId) { setLoading(false); return; }
+    let cancelled = false;
+    setLoading(true); setLoadError(null);
+    (async () => {
+      try {
+        const { data: c, error: cErr } = await supabase
+          .from('rc_students').select('*, class:rc_classes(name)').eq('id', id).maybeSingle();
+        if (cErr) throw cErr;
+        if (cancelled) return;
+        setChild(c || null);
+
+        const [resR, invR, payR] = await Promise.all([
+          supabase.from('rc_results').select('*, subject:rc_subjects(name, code), assessment:rc_assessments(name, scheduled_for, is_published, term:rc_terms(name))').eq('student_id', id),
+          supabase.from('rc_invoices').select('*, term:rc_terms(name)').eq('student_id', id).order('due_date', { ascending: false }),
+          supabase.from('rc_payments').select('*, invoice:rc_invoices(invoice_no, student_id)'),
+        ]);
+        if (cancelled) return;
         const grouped = {};
-        for (const r of (data || []).filter((x) => x.assessment?.is_published)) {
+        for (const r of (resR.data || []).filter((x) => x.assessment?.is_published)) {
           (grouped[r.assessment_id] ||= { meta: r.assessment, rows: [] }).rows.push(r);
         }
         setMarksByAssessment(grouped);
-      });
-
-    supabase.from('rc_invoices').select('*, term:rc_terms(name)').eq('student_id', id).order('due_date', { ascending: false })
-      .then(({ data }) => setInvoices(data || []));
-
-    supabase.from('rc_payments').select('*, invoice:rc_invoices(invoice_no, student_id)')
-      .then(({ data }) => setPayments((data || []).filter((p) => p.invoice?.student_id === id)));
-  }, [id, parent]);
+        setInvoices(invR.data || []);
+        setPayments((payR.data || []).filter((p) => p.invoice?.student_id === id));
+      } catch (e) {
+        if (!cancelled) setLoadError(e.message || 'Could not load this child');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id, parent, validId]);
 
   useEffect(() => {
     if (!child?.current_class_id) return;
@@ -52,7 +72,38 @@ export default function ParentChildDetail() {
       .then(({ data }) => setHomework(data || []));
   }, [child]);
 
-  if (!child) return <p className="text-rc-500">Loading…</p>;
+  if (!validId) {
+    return (
+      <div className="card max-w-md text-center">
+        <p className="font-display text-lg font-bold text-rc-900">Pick a child</p>
+        <p className="mt-1 text-sm text-rc-600">This link is missing a child reference. Choose one from <Link to="/parent/children" className="font-semibold text-rc-700 underline">My Children</Link>.</p>
+      </div>
+    );
+  }
+  if (loading) {
+    return (
+      <div className="card max-w-md text-center text-rc-500">
+        <div className="mx-auto mb-2 h-5 w-5 animate-spin rounded-full border-2 border-rc-300 border-t-rc-700"/>
+        Loading child profile…
+      </div>
+    );
+  }
+  if (loadError) {
+    return (
+      <div className="card max-w-md text-center text-rose-700">
+        {loadError}
+        <p className="mt-2"><Link to="/parent/children" className="underline">Back to My Children</Link></p>
+      </div>
+    );
+  }
+  if (!child) {
+    return (
+      <div className="card max-w-md text-center">
+        <p className="font-display text-lg font-bold text-rc-900">Child not found</p>
+        <p className="mt-1 text-sm text-rc-600">This learner isn&apos;t linked to your account. <Link to="/parent/children" className="font-semibold text-rc-700 underline">Back to My Children</Link></p>
+      </div>
+    );
+  }
 
   const outstanding = invoices.reduce((s, r) => s + Math.max(0, Number(r.total_usd) - Number(r.paid_usd || 0)), 0);
   const totalInvoiced = invoices.reduce((s, r) => s + Number(r.total_usd), 0);

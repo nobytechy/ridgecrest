@@ -89,12 +89,14 @@ create table if not exists public.rc_roles (
   created_at  timestamptz not null default now()
 );
 insert into public.rc_roles (id, name, permissions, is_system) values
-  ('admin',       'Administrator',         '{"all": true}'::jsonb,                              true),
-  ('headmaster',  'Headmaster',            '{"all": true}'::jsonb,                              true),
-  ('teacher',     'Teacher',               '{"marks": true, "attendance": true}'::jsonb,        true),
-  ('bursar',      'Bursar / Accountant',   '{"fees": true, "payments": true}'::jsonb,           true),
-  ('secretary',   'Secretary',             '{"students": true, "announcements": true}'::jsonb,  true)
+  ('admin',       'Administrator',         '{"all": true}'::jsonb,                                                                       true),
+  ('headmaster',  'Headmaster',            '{"all": true}'::jsonb,                                                                       true),
+  ('teacher',     'Teacher',               '{"marks": true, "attendance": true, "classes": true}'::jsonb,                                true),
+  ('bursar',      'Bursar / Accountant',   '{"fees": true, "payments": true, "students": true}'::jsonb,                                  true),
+  ('secretary',   'Secretary',             '{"students": true, "announcements": true}'::jsonb,                                            true)
 on conflict (id) do nothing;
+-- Force admin/headmaster to keep super-user access even if a previous run misconfigured them.
+update public.rc_roles set permissions = '{"all": true}'::jsonb where id in ('admin', 'headmaster');
 
 -- ─── Staff ──────────────────────────────────────────────────────────────
 create table if not exists public.rc_staff (

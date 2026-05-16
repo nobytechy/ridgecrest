@@ -33,6 +33,7 @@ import AdminSettings      from '@/pages/admin/AdminSettings';
 import AdminAttendance    from '@/pages/admin/AdminAttendance';
 import AdminTermReports   from '@/pages/admin/AdminTermReports';
 import AdminClassFeed     from '@/pages/admin/AdminClassFeed';
+import AdminRoles         from '@/pages/admin/AdminRoles';
 
 import StudentLogin     from '@/pages/student/StudentLogin';
 import StudentDashboard from '@/pages/student/StudentDashboard';
@@ -132,6 +133,7 @@ export default function App() {
             <Route path="class-feed"    element={<AdminClassFeed/>}/>
             <Route path="fees"          element={<AdminFees/>}/>
             <Route path="announcements" element={<AdminAnnouncements/>}/>
+            <Route path="roles"         element={<AdminRoles/>}/>
             <Route path="settings"      element={<AdminSettings/>}/>
           </Route>
 

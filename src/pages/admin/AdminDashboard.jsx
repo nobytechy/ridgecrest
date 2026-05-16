@@ -8,9 +8,16 @@ import { useSettings } from '@/context/SettingsContext';
 import { formatMoney, formatDate } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import BirthdayWidget from '@/components/BirthdayWidget';
+import { useAuth } from '@/context/AuthContext';
+import { canSee } from '@/lib/permissions';
 
 export default function AdminDashboard() {
   const { currentTerm, settings } = useSettings();
+  const { role } = useAuth();
+  const seesFees     = canSee(role, 'fees');
+  const seesStudents = canSee(role, 'students');
+  const seesMarks    = canSee(role, 'marks');
+  const seesAnn      = canSee(role, 'announcements');
   const [stats, setStats] = useState({
     students: 0, parents: 0, staff: 0, classes: 0,
     invoiced: 0, collected: 0, outstanding: 0, openInvoices: 0,
@@ -69,54 +76,58 @@ export default function AdminDashboard() {
         <Kpi icon={ClipboardList} label="Published" value={stats.publishedMarks} sub="Assessments visible to parents"/>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <div className="card">
-          <p className="text-xs font-semibold uppercase tracking-wider text-rc-500">Fee collection · this term</p>
-          <p className="mt-1 font-display text-3xl font-bold text-rc-900">{collectionPct}%</p>
-          <p className="mt-1 text-xs text-rc-500">{formatMoney({ amount: stats.collected, currency: 'USD' })} of {formatMoney({ amount: stats.invoiced, currency: 'USD' })} invoiced</p>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-rc-100">
-            <div className="h-full bg-rc-900" style={{ width: `${collectionPct}%` }}/>
+      {seesFees && (
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          <div className="card">
+            <p className="text-xs font-semibold uppercase tracking-wider text-rc-500">Fee collection · this term</p>
+            <p className="mt-1 font-display text-3xl font-bold text-rc-900">{collectionPct}%</p>
+            <p className="mt-1 text-xs text-rc-500">{formatMoney({ amount: stats.collected, currency: 'USD' })} of {formatMoney({ amount: stats.invoiced, currency: 'USD' })} invoiced</p>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-rc-100">
+              <div className="h-full bg-rc-900" style={{ width: `${collectionPct}%` }}/>
+            </div>
+          </div>
+          <div className="card">
+            <p className="text-xs font-semibold uppercase tracking-wider text-rc-500">Outstanding</p>
+            <p className="mt-1 font-display text-3xl font-bold text-rc-900">{formatMoney({ amount: stats.outstanding, currency: 'USD' })}</p>
+            <p className="mt-1 text-xs text-rc-500">Across {stats.openInvoices} open / partial invoice{stats.openInvoices === 1 ? '' : 's'}</p>
+            <Link to="/admin/fees" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-rc-700 hover:underline">
+              Open fees ledger <ArrowRight size={12}/>
+            </Link>
           </div>
         </div>
-        <div className="card">
-          <p className="text-xs font-semibold uppercase tracking-wider text-rc-500">Outstanding</p>
-          <p className="mt-1 font-display text-3xl font-bold text-rc-900">{formatMoney({ amount: stats.outstanding, currency: 'USD' })}</p>
-          <p className="mt-1 text-xs text-rc-500">Across {stats.openInvoices} open / partial invoice{stats.openInvoices === 1 ? '' : 's'}</p>
-          <Link to="/admin/fees" className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-rc-700 hover:underline">
-            Open fees ledger <ArrowRight size={12}/>
-          </Link>
-        </div>
-      </div>
+      )}
 
-      <section className="mt-6 card">
-        <div className="mb-4 flex items-end justify-between">
-          <h2 className="font-display text-lg font-bold text-rc-900 inline-flex items-center gap-2"><Receipt size={16} className="text-rc-700"/> Recent fee receipts</h2>
-          <Link to="/admin/fees" className="text-xs font-medium text-rc-700 hover:underline">All receipts →</Link>
-        </div>
-        {recent.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-rc-300 p-6 text-center text-sm text-rc-500">No receipts recorded yet.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-left text-xs uppercase tracking-wider text-rc-500">
-                  <th className="py-2">Receipt</th><th>Student</th><th>Date</th><th className="text-right">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recent.map((r) => (
-                  <tr key={r.id} className="border-t border-rc-100">
-                    <td className="py-2 font-mono text-xs">{r.receipt_no}</td>
-                    <td>{r.invoice?.student?.display_name} <span className="text-rc-400">· {r.invoice?.student?.student_code}</span></td>
-                    <td>{formatDate(r.paid_at)}</td>
-                    <td className="text-right font-semibold">{formatMoney({ amount: r.amount_usd, currency: 'USD' })}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {seesFees && (
+        <section className="mt-6 card">
+          <div className="mb-4 flex items-end justify-between">
+            <h2 className="font-display text-lg font-bold text-rc-900 inline-flex items-center gap-2"><Receipt size={16} className="text-rc-700"/> Recent fee receipts</h2>
+            <Link to="/admin/fees" className="text-xs font-medium text-rc-700 hover:underline">All receipts →</Link>
           </div>
-        )}
-      </section>
+          {recent.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-rc-300 p-6 text-center text-sm text-rc-500">No receipts recorded yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wider text-rc-500">
+                    <th className="py-2">Receipt</th><th>Student</th><th>Date</th><th className="text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recent.map((r) => (
+                    <tr key={r.id} className="border-t border-rc-100">
+                      <td className="py-2 font-mono text-xs">{r.receipt_no}</td>
+                      <td>{r.invoice?.student?.display_name} <span className="text-rc-400">· {r.invoice?.student?.student_code}</span></td>
+                      <td>{formatDate(r.paid_at)}</td>
+                      <td className="text-right font-semibold">{formatMoney({ amount: r.amount_usd, currency: 'USD' })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="mt-6 grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-1"><BirthdayWidget scope="all"/></div>
@@ -133,36 +144,42 @@ export default function AdminDashboard() {
       </section>
 
       <section className="mt-6 grid gap-4 md:grid-cols-3">
-        <Link to="/admin/students" className="card hover:border-rc-400">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-rc-100 text-rc-900"><GraduationCap size={18}/></div>
-            <div className="flex-1">
-              <p className="font-display font-bold text-rc-900">Add a student</p>
-              <p className="text-xs text-rc-500">Generates PIN + portal login</p>
+        {seesStudents && (
+          <Link to="/admin/students" className="card hover:border-rc-400">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-rc-100 text-rc-900"><GraduationCap size={18}/></div>
+              <div className="flex-1">
+                <p className="font-display font-bold text-rc-900">Add a student</p>
+                <p className="text-xs text-rc-500">Generates PIN + portal login</p>
+              </div>
+              <ArrowRight size={14} className="text-rc-400"/>
             </div>
-            <ArrowRight size={14} className="text-rc-400"/>
-          </div>
-        </Link>
-        <Link to="/admin/marks" className="card hover:border-rc-400">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-rc-100 text-rc-900"><ClipboardList size={18}/></div>
-            <div className="flex-1">
-              <p className="font-display font-bold text-rc-900">Enter marks</p>
-              <p className="text-xs text-rc-500">Per class · per subject · per assessment</p>
+          </Link>
+        )}
+        {seesMarks && (
+          <Link to="/admin/marks" className="card hover:border-rc-400">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-rc-100 text-rc-900"><ClipboardList size={18}/></div>
+              <div className="flex-1">
+                <p className="font-display font-bold text-rc-900">Enter marks</p>
+                <p className="text-xs text-rc-500">Per class · per subject · per assessment</p>
+              </div>
+              <ArrowRight size={14} className="text-rc-400"/>
             </div>
-            <ArrowRight size={14} className="text-rc-400"/>
-          </div>
-        </Link>
-        <Link to="/admin/announcements" className="card hover:border-rc-400">
-          <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-rc-100 text-rc-900"><Megaphone size={18}/></div>
-            <div className="flex-1">
-              <p className="font-display font-bold text-rc-900">Post an announcement</p>
-              <p className="text-xs text-rc-500">Public · parents · staff · students</p>
+          </Link>
+        )}
+        {seesAnn && (
+          <Link to="/admin/announcements" className="card hover:border-rc-400">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 place-items-center rounded-lg bg-rc-100 text-rc-900"><Megaphone size={18}/></div>
+              <div className="flex-1">
+                <p className="font-display font-bold text-rc-900">Post an announcement</p>
+                <p className="text-xs text-rc-500">Public · parents · staff · students</p>
+              </div>
+              <ArrowRight size={14} className="text-rc-400"/>
             </div>
-            <ArrowRight size={14} className="text-rc-400"/>
-          </div>
-        </Link>
+          </Link>
+        )}
       </section>
     </div>
   );
