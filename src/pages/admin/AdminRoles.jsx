@@ -128,23 +128,34 @@ export default function AdminRoles() {
                   </button>
                 </div>
 
-                <div className="mb-4 flex items-center gap-3 rounded-lg border border-rc-200 bg-rc-50/40 p-3">
-                  <Toggle on={isAll} onChange={() => toggle(r.id, 'all')}/>
+                <button
+                  type="button"
+                  onClick={() => toggle(r.id, 'all')}
+                  aria-pressed={isAll}
+                  className="mb-4 flex w-full items-center gap-3 rounded-lg border border-rc-200 bg-rc-50/40 p-3 text-left transition hover:bg-rc-100"
+                >
+                  <Toggle on={isAll}/>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-rc-900">All permissions</p>
                     <p className="text-xs text-rc-500">Super-user shortcut — overrides every toggle below.</p>
                   </div>
-                </div>
+                </button>
 
                 <div className={cn('grid gap-3 md:grid-cols-2', isAll && 'opacity-50 pointer-events-none')}>
                   {PERMISSION_KEYS.map(({ key, label, hint }) => (
-                    <label key={key} className="flex items-start gap-3 rounded-lg border border-rc-200 bg-white p-3 cursor-pointer hover:bg-rc-50">
-                      <Toggle on={!!perms[key]} onChange={() => toggle(r.id, key)}/>
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => toggle(r.id, key)}
+                      aria-pressed={!!perms[key]}
+                      className="flex w-full items-start gap-3 rounded-lg border border-rc-200 bg-white p-3 text-left transition hover:bg-rc-50"
+                    >
+                      <Toggle on={!!perms[key]}/>
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-rc-900">{label}</p>
                         <p className="text-xs text-rc-500">{hint}</p>
                       </div>
-                    </label>
+                    </button>
                   ))}
                 </div>
               </section>
@@ -156,11 +167,14 @@ export default function AdminRoles() {
   );
 }
 
-function Toggle({ on, onChange }) {
+/* Toggle is purely visual now — the parent button owns the click so we don't
+   get nested-button issues and the entire row remains a single hit target. */
+function Toggle({ on }) {
   return (
-    <button type="button" onClick={onChange}
+    <span
+      aria-hidden="true"
       className={cn(
-        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition',
+        'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition',
         on ? 'bg-rc-700' : 'bg-rc-300'
       )}>
       <span className={cn(
@@ -169,6 +183,6 @@ function Toggle({ on, onChange }) {
       )}>
         {on && <Check size={12} className="mx-auto mt-0.5 text-rc-700"/>}
       </span>
-    </button>
+    </span>
   );
 }
