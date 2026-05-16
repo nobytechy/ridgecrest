@@ -22,7 +22,9 @@ export default function ParentDashboard() {
 
   async function load() {
     const { data: kids } = await supabase.from('rc_student_parents').select('is_primary, student:rc_students(*, class:rc_classes(name))').eq('parent_id', parent.id);
-    const list = (kids || []).map((row) => ({ ...row.student, is_primary: row.is_primary })).filter(Boolean);
+    const list = (kids || [])
+      .filter((row) => row.student?.id)
+      .map((row) => ({ ...row.student, is_primary: row.is_primary }));
     // For each child fetch latest published assessment marks + outstanding fee
     for (const c of list) {
       const [{ data: rs }, { data: invs }] = await Promise.all([

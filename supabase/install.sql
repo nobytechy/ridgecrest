@@ -832,7 +832,11 @@ create policy "student reads class feed"   on public.rc_class_feed      for sele
 -- Parent self-reads + children
 create policy "parent reads self"         on public.rc_parents         for select using (id = auth.uid());
 create policy "parent reads sp_self"      on public.rc_student_parents for select using (parent_id = auth.uid());
-create policy "parent reads own kids"     on public.rc_students        for select using (exists (select 1 from public.rc_student_parents sp where sp.student_id = id and sp.parent_id = auth.uid()));
+-- IN-subquery shape (instead of EXISTS) — PostgREST pushes this down more
+-- predictably across both join queries and .in('id', [...]) shapes.
+create policy "parent reads own kids"     on public.rc_students        for select using (
+  id in (select student_id from public.rc_student_parents where parent_id = auth.uid())
+);
 create policy "parent reads kid marks"    on public.rc_results         for select using (exists (select 1 from public.rc_student_parents sp where sp.student_id = student_id and sp.parent_id = auth.uid()) and exists (select 1 from public.rc_assessments a where a.id = assessment_id and a.is_published));
 create policy "parent reads kid invoices" on public.rc_invoices        for select using (exists (select 1 from public.rc_student_parents sp where sp.student_id = student_id and sp.parent_id = auth.uid()));
 create policy "parent reads kid payments" on public.rc_payments        for select using (exists (select 1 from public.rc_invoices i join public.rc_student_parents sp on sp.student_id = i.student_id where i.id = invoice_id and sp.parent_id = auth.uid()));

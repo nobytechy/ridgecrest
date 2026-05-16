@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, ArrowRight, Loader2 } from 'lucide-react';
+import { GraduationCap, ArrowRight, Loader2, RefreshCw } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 
@@ -11,29 +11,25 @@ export default function ParentChildren() {
   const [loadError, setLoadError] = useState(null);
 
   useEffect(() => {
-    if (!parent?.id) return;
+    if (!parent?.id) { setLoading(false); return; }
     load();
   }, [parent]);
 
   async function load() {
     setLoading(true); setLoadError(null);
     try {
-      // Two-step fetch — the nested join sometimes returns null student rows
-      // when RLS or FK joins hiccup; querying explicitly is more reliable.
-      const { data: links, error: linksErr } = await supabase
+      // Single join — same shape the parent dashboard uses (proven to work
+      // with the parent-reads-own-kids RLS policy). The .filter at the end
+      // drops rows where the join didn't return a student (RLS or orphan).
+      const { data, error } = await supabase
         .from('rc_student_parents')
-        .select('student_id, is_primary')
+        .select('is_primary, student:rc_students(id, student_code, display_name, preferred_name, photo_url, status, class:rc_classes(name))')
         .eq('parent_id', parent.id);
-      if (linksErr) throw linksErr;
-      const ids = (links || []).map((l) => l.student_id).filter(Boolean);
-      if (ids.length === 0) { setChildren([]); return; }
-      const { data: kids, error: kidsErr } = await supabase
-        .from('rc_students')
-        .select('id, student_code, display_name, preferred_name, photo_url, class:rc_classes(name)')
-        .in('id', ids);
-      if (kidsErr) throw kidsErr;
-      const isPrimary = Object.fromEntries((links || []).map((l) => [l.student_id, l.is_primary]));
-      setChildren((kids || []).map((k) => ({ ...k, is_primary: !!isPrimary[k.id] })));
+      if (error) throw error;
+      const kids = (data || [])
+        .filter((row) => row.student?.id)
+        .map((row) => ({ ...row.student, is_primary: row.is_primary }));
+      setChildren(kids);
     } catch (e) {
       setLoadError(e.message || 'Could not load your children');
     } finally {
@@ -43,9 +39,12 @@ export default function ParentChildren() {
 
   return (
     <div>
-      <header className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-rc-900">My Children</h1>
-        <p className="mt-1 text-sm text-rc-600">{children.length} child{children.length === 1 ? '' : 'ren'} linked to your account.</p>
+      <header className="mb-6 flex items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-rc-900">My Children</h1>
+          <p className="mt-1 text-sm text-rc-600">{children.length} child{children.length === 1 ? '' : 'ren'} linked to your account.</p>
+        </div>
+        <button onClick={load} disabled={loading} className="btn-ghost text-xs"><RefreshCw size={12}/> Refresh</button>
       </header>
 
       {loading ? (
@@ -58,9 +57,12 @@ export default function ParentChildren() {
           <button onClick={load} className="ml-2 underline">Retry</button>
         </div>
       ) : children.length === 0 ? (
-        <div className="card text-center">
-          <GraduationCap className="mx-auto mb-2 text-rc-400" size={24}/>
-          <p className="text-sm text-rc-500">No children linked yet. Please contact the school office to have your account linked.</p>
+        <div className="card max-w-xl text-center">
+          <GraduationCap className="mx-auto mb-2 text-rc-400" size={28}/>
+          <p className="font-display text-base font-bold text-rc-900">No children linked yet</p>
+          <p className="mt-1 text-sm text-rc-600">
+            Please contact the school office on Chiremba Road, or call <strong>+263 77 389 2866</strong>, to have your children linked to your account.
+          </p>
         </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
